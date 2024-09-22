@@ -317,20 +317,17 @@ fn shift(b : bool) -> usize { ((b as u8) << (b as u8) << 0) as usize }
 use con::{ bytes_to_hex, hex_to_bytes };
 
 // ----------------------------------------------------------------------------
-
 /* symmetry is performant
 -------------------------------------------------------------------------------
-                                                      MIT License 2024 Maka  */                                                      
-
+                                                      MIT License 2024 Maka  */
 // ----------------------------------------------------------------------------
-
 // End of core.
 
 /* ----------------------------------------------------------------------------
 External / Imported (this lib can be 3 files.. but does it really need to be)
 -----------------------------------------------------------------------------*/
 /* 
- @title   : Kwl32::util 
+ @title  : Kwl32::util 
  @notice : some tools for Kawala 
  @author : Maka 
 
@@ -493,4 +490,4 @@ pub mod con {
 
 /* symmetry is performant
 -------------------------------------------------------------------------------
-                                                      MIT License 2024 Maka  */
+                                                      MIT License 2024 Maka  */ 
