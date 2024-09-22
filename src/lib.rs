@@ -17,6 +17,7 @@ trait BytesTrait {
   fn bytes(&self) -> &[u8];
   fn hex(&self)   -> String;
   fn len(&self)   -> usize;
+  
 }
 
 impl BytesTrait for Bytes {
@@ -240,21 +241,18 @@ impl View {
   }
   // returns a single word, will truncate overflow to max len
   fn word(&self, index : usize) -> String { 
-    self.page[std::cmp::min(index, &self.word_count() -ZERO_OFFSET)].hex() 
+    self.__word(index).hex() 
   }
   // returns a range of words, will trunc to max
   fn words(&self, start : usize, end : usize) -> Vec<String> { 
-    self.page[
-      std::cmp::min(start, end)..
-      std::cmp::min(end, &self.page.len() -ZERO_OFFSET)
-    ] 
+    self.__words(start, end)
     . iter()
     . map(|x|x.hex())
     . collect::<Vec<String>>()
   }
   // returns the number of word segments in array
   fn word_count(&self) -> usize { self.page.len() }
-  // replaces a word on the page, will replace last if pass in overflow
+  // private replaces a word, will replace last if pass out of bounds
   fn _replace_word(&mut self, index : usize, bytes : &[u8]) -> () {
     let slice_cap = std::cmp::min(WORD_LEN, bytes.len());
     let capped_id = std::cmp::min(index, &self.word_count() -ZERO_OFFSET);
@@ -276,11 +274,31 @@ impl View {
       self.sig(), self.data(), self.page(), self.word_count()
     );
   }
+  
+/* ----------------------------------------------------------------------------
+View cont..   exposed functions that take or return Kawala types
+-----------------------------------------------------------------------------*/
+  // returns  a ref to all 32 byte Words 
+  fn __page(&self) -> &[Word] {
+    &self.__words(ZERO_INDEX, self.word_count() -ZERO_OFFSET)
+  }
+  // returns a ref to a single Word, will truncate out of bounds to max len
+  fn __word(&self, index : usize) -> &Word { 
+    &self.page[std::cmp::min(index, &self.word_count() -ZERO_OFFSET)] 
+  }
+  // returns a ref to a range of Words, will trunc to max
+  fn __words(&self, start : usize, end : usize) -> &[Word] { 
+    &self.page[
+      std::cmp::min(start, end)..
+      std::cmp::min(end, &self.page.len() -ZERO_OFFSET)
+    ]
+  }
 }
 
-// ----------------------------------------------------------------------------
-// Appendix
-// ----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------
+Appendix
+-----------------------------------------------------------------------------*/
+
 static EMPTY_U8_SLICE  :    [u8;0]        =   [0;0]; 
 const  SIG_LEN         :    usize         =   4;
 const  EMPTY_SIG       :    [u8;4]        =   [0;4]; 
@@ -299,6 +317,77 @@ fn shift(b : bool) -> usize { ((b as u8) << (b as u8) << 0) as usize }
 use con::{ bytes_to_hex, hex_to_bytes };
 
 // ----------------------------------------------------------------------------
+
+/* symmetry is performant
+-------------------------------------------------------------------------------
+                                                      MIT License 2024 Maka  */                                                      
+
+// ----------------------------------------------------------------------------
+
+// End of core.
+
+/* ----------------------------------------------------------------------------
+External / Imported (this lib can be 3 files.. but does it really need to be)
+-----------------------------------------------------------------------------*/
+/* 
+ @title   : Kwl32::util 
+ @notice : some tools for Kawala 
+ @author : Maka 
+
+ Notes to self : Try to do at least one thing well, then leave it at that.
+*/
+
+/* ----------------------------------------------------------------------------
+Util.
+-----------------------------------------------------------------------------*/
+pub mod util {
+  pub fn rpad32(bytes: &[u8]) -> [u8; 32] {
+    let mut padded = [0u8; 32]; padded[..bytes.len()] . copy_from_slice(bytes);
+    padded
+  }
+
+  pub fn lpad32(bytes: &[u8])  -> [u8; 32] {
+    let padding    = std::cmp::max(0, 32 - bytes.len());
+    let mut padded = [0u8; 32]; padded[padding..]     . copy_from_slice(bytes);
+    padded
+  }
+//-----------------------------------------------------------------------------
+// map can be better than simd for small arrays and we are working on 32 bytes
+// *NOTE* so profile these!
+#[cfg(feature = "simd")]
+use std::simd::{ u8x16, SimdFloat };
+
+  fn _fab(f: &dyn Fn(u8,u8) -> u8, a: &[u8], b: &[u8]) -> [u8;32] {
+    if a.len() != b.len() || a.len() != 32 { return [0;32]; }
+    #[cfg(feature = "simd")]
+    {
+      let a_simd = u8x16::from_slice(a);
+      let b_simd = u8x16::from_slice(b);
+      let result_simd = f(a_simd, b_simd);
+      return result_simd.to_array;
+    }
+    // Fallback
+    let mut buf = [0u8;32]; (0..32) . for_each(|i|buf[i] = f(a[i], b[i]));
+    buf    
+  }
+
+  pub fn xor32(a: &[u8], b: &[u8]) -> [u8;32] { _fab(&xoru8, a, b) }
+
+  pub fn and32(a: &[u8], b: &[u8]) -> [u8;32] { _fab(&andu8, a, b) }  
+
+  pub fn not32(a: &[u8]          ) -> [u8;32] { 
+    if a.len() != 32 { return [0;32]; }
+    let mut buf = [0u8;32]; (0..32) . for_each(|i|buf[i] = (!a[i])); buf
+  }  
+ 
+  pub fn or32 (a: &[u8], b: &[u8]) -> [u8;32] { _fab(&oru8 , a, b) }
+  
+  fn xoru8(a: u8, b: u8) -> u8 { a ^ b } fn andu8(a: u8, b: u8) -> u8 { a & b }
+  fn notu8(a: u8)        -> u8 { ! a   } fn oru8 (a: u8, b: u8) -> u8 { a | b }
+}
+/* ----------------------------------------------------------------------------
+Main for Testing..
+-----------------------------------------------------------------------------*/
 
 fn main(){
 
@@ -403,5 +492,5 @@ pub mod con {
 }
 
 /* symmetry is performant
-  ---------------------------------------------------------------------------
-                                  MIT License Copyright (c) 2024 Maka Gucci  */
+-------------------------------------------------------------------------------
+                                                      MIT License 2024 Maka  */
