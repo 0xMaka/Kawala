@@ -319,12 +319,28 @@ View cont..      destructive functions that mutate state
     let _a = self.__word(index_b);
     self.replace_word_from_bytes(index_b, &self.__not_word(&_a).bytes())
  }
- 
+
+  fn _fop(
+    &mut self, 
+    f     : &dyn Fn((&Word, &Word)) -> Word, 
+    array : &[u8], index : usize
+  ) -> () {
+    let _a = Word::from_bytes(array); let _b = self.__word(index);
+    self.replace_word_from_bytes(index, &f((&_a, _b)).bytes())
+  }
 /* ----------------------------------------------------------------------------
 View cont..   exposed functions that take or return Kawala types
 -----------------------------------------------------------------------------*/
    ///////////////////////////////////////////////////////////////////////////  
 
+
+  fn __append(&mut self, word : Word) -> () {
+    self.page.push(word)
+  }
+
+  fn __pop(&mut self) -> Word {
+    self.page.pop() . unwrap_or(Word::from_bytes(&EMPTY_BYTES32)) 
+  }  
   // returns a ref to all 32 byte Words 
   fn __page(&self) -> &[Word] {
     &self.__words(ZERO_INDEX, self.word_count() -ZERO_OFFSET)
@@ -350,13 +366,11 @@ View cont..   exposed functions that take or return Kawala types
   }  
   // xor two words, these and the rest are useful for building byte streams
   fn __xor_words(&self, words : (&Word, &Word)) -> Word {
-    let (a, b) = self.__normalize_words(words.0, words.1);
-    Word::from_bytes(&xor32(a.data.bytes(), b.data.bytes()))
+    self._fops(&xor32, (words.0, words.1))
   }
   // return result of a logical and on two 32 byte words
   fn __and_words(&self, words : (&Word, &Word)) -> Word {
-    let (a, b) = self.__normalize_words(words.0, words.1);
-    Word::from_bytes(&and32(a.data.bytes(), b.data.bytes()))
+    self._fops(&and32, (words.0, words.1))
   }
   // return the result of flipping the bits in a 32 byte words
   fn __not_word(&self, word : &Word) -> Word {
@@ -364,9 +378,17 @@ View cont..   exposed functions that take or return Kawala types
   }
   // return result of a logical or on two 32 byte words
   fn __or_words(&self, words : (&Word, &Word)) -> Word {
-    let (a, b) = self.__normalize_words(words.0, words.1);
-    Word::from_bytes(&or32(a.data.bytes(), b.data.bytes()))
+    self._fops(&or32, (words.0, words.1))
   }
+  
+  fn _fops(
+    &self, 
+    f     : &dyn Fn(&[u8], &[u8]) -> [u8;WORD_LEN], 
+    words : (&Word, &Word)
+  ) -> Word {
+    let (a, b) = self.__normalize_words(&words.0, &words.1);
+    Word::from_bytes(&f(a.data.bytes(), b.data.bytes()))
+  } 
 }
 
 /* ----------------------------------------------------------------------------
