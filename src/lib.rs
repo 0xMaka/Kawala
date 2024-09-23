@@ -4,8 +4,8 @@
  @author : Maka 
  
 // --------------------------------------------------------------------------*/
-// Bytes type
-// ----------------------------------------------------------------------------
+/* Bytes type
+-----------------------------------------------------------------------------*/
 #[derive(Debug)]
 pub enum Bytes {
  Bytes4 ([u8;SIG_LEN]),
@@ -17,7 +17,6 @@ trait BytesTrait {
   fn bytes(&self) -> &[u8];
   fn hex(&self)   -> String;
   fn len(&self)   -> usize;
-  
 }
 
 impl BytesTrait for Bytes {
@@ -47,9 +46,9 @@ impl<I: std::slice::SliceIndex<[u8]>> std::ops::Index<I> for Bytes {
   }
 }
 
-// ----------------------------------------------------------------------------
-// Calldata structure
-// ----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------
+ Calldata structure
+-----------------------------------------------------------------------------*/
 #[derive(Debug)]
 pub struct Calldata {
   data : Bytes
@@ -91,9 +90,9 @@ impl Calldata {
   }
 }
 
-// ----------------------------------------------------------------------------
-// Signature structure
-// ----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------
+ Signature structure
+-----------------------------------------------------------------------------*/
 #[derive(Debug)]
 pub struct Signature {
   data : Bytes
@@ -131,9 +130,10 @@ impl DataTrait for Signature {
   }
 }
 
-// ----------------------------------------------------------------------------
-// Word structure
-// ----------------------------------------------------------------------------
+/*----------------------------------------------------------------------------
+ Word structure
+-----------------------------------------------------------------------------*/
+
 #[derive(Debug)]
 pub struct Word {
   data : Bytes
@@ -174,9 +174,10 @@ impl DataTrait for Word {
   }
 }
 
-// ----------------------------------------------------------------------------
-// View structure
-// ----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------
+ View structure
+-----------------------------------------------------------------------------*/
+
 #[derive(Debug)]
 pub struct View {
   sig  : Option<Signature>, 
@@ -251,22 +252,7 @@ impl View {
     . collect::<Vec<String>>()
   }
   // returns the number of word segments in array
-  fn word_count(&self) -> usize { self.page.len() }
-  // private replaces a word, will replace last if pass out of bounds
-  fn _replace_word(&mut self, index : usize, bytes : &[u8]) -> () {
-    let slice_cap = std::cmp::min(WORD_LEN, bytes.len());
-    let capped_id = std::cmp::min(index, &self.word_count() -ZERO_OFFSET);
-    let slice     = &bytes[..slice_cap];
-    self.page[capped_id] = Word::from_bytes(slice)
-  }
-  // replace word using bytes as source
-  fn replace_word_from_bytes(&mut self, index : usize, bytes : &[u8]) -> () {
-    self._replace_word(index, bytes)
-  }
-  // replace word using a hex str as source
-  fn replace_word_from_hex(&mut self, index : usize, string: &str) -> () { 
-    self._replace_word(index, hex_to_bytes(string).as_slice())
-  }
+  fn word_count(&self) -> usize { self.page.len() } 
   // quick prints a summary
   fn summary(&self) -> () {
     println!(
@@ -276,9 +262,59 @@ impl View {
   }
   
 /* ----------------------------------------------------------------------------
+View cont..      destructive functions that mutate state
+-----------------------------------------------------------------------------*/
+    
+  // private replaces a word, will replace last if pass out of bounds
+  fn _replace_word(&mut self, index : usize, bytes : &[u8]) -> () {
+    let slice_cap = std::cmp::min(WORD_LEN, bytes.len());
+    let capped_id = std::cmp::min(index, &self.word_count() -ZERO_OFFSET);
+    let slice     = &bytes[..slice_cap];
+    self.page[capped_id] = Word::from_bytes(slice)
+  }
+  // replace word using a byte array as source
+  fn replace_word_from_bytes(&mut self, index : usize, bytes : &[u8]) -> () {
+    self._replace_word(index, bytes)
+  }
+  // replace word, first converting from a hex str as source
+  fn replace_word_from_hex(&mut self, index : usize, string : &str) -> () { 
+    self._replace_word(index, hex_to_bytes(string).as_slice())
+  }
+  
+  fn left_pad_word(&mut self, index : usize) -> () {
+    let word = self.__word(index);
+    self.replace_word_from_bytes(index, &lpad32(word.data.bytes()))
+  }
+  
+  fn right_pad_word(&mut self, index : usize) -> (){
+    let word = self.__word(index);
+    self.replace_word_from_bytes(index, &rpad32(word.data.bytes()))
+  }
+  
+  fn xor_a_into_b(&mut self, array_a : &[u8], index_b: usize) -> () {
+    let _a = Word::from_bytes(array_a); let _b = self.__word(index_b);
+    self.replace_word_from_bytes(index_b, &self.__xor_words((&_a, _b)).bytes())
+ }
+  fn and_a_into_b(&mut self, array_a : &[u8], index_b: usize) -> () {
+    let _a = Word::from_bytes(array_a); let _b = self.__word(index_b);
+    self.replace_word_from_bytes(index_b, &self.__and_words((&_a, _b)).bytes())
+ }
+ 
+  fn or_a_into_b(&mut self, array_a : &[u8], index_b: usize) -> () {
+    let _a = Word::from_bytes(array_a); let _b = self.__word(index_b);
+    self.replace_word_from_bytes(index_b, &self.__or_words((&_a, _b)).bytes())
+ }
+ 
+  fn not_a_into_a(&mut self, index_b: usize) -> () {
+    let _a = self.__word(index_b);
+    self.replace_word_from_bytes(index_b, &self.__not_word(&_a).bytes())
+ }
+ 
+/* ----------------------------------------------------------------------------
 View cont..   exposed functions that take or return Kawala types
 -----------------------------------------------------------------------------*/
-  // returns  a ref to all 32 byte Words 
+
+  // returns a ref to all 32 byte Words 
   fn __page(&self) -> &[Word] {
     &self.__words(ZERO_INDEX, self.word_count() -ZERO_OFFSET)
   }
@@ -292,6 +328,33 @@ View cont..   exposed functions that take or return Kawala types
       std::cmp::min(start, end)..
       std::cmp::min(end, &self.page.len() -ZERO_OFFSET)
     ]
+  }
+  // shouldn't be relied on, will pad to right as is the default
+  fn __normalize_words(&self, a : &Word, b : &Word) -> (Word, Word) {
+    let f = |x| Word::from_bytes(x);
+    if a.data.len() == WORD_LEN && WORD_LEN == b.data.len() { 
+      return (f(a.data.bytes()), f(b.data.bytes())); } else {
+      (f(&rpad32(a.data.bytes())), f(&rpad32(b.data.bytes())))
+    }
+  }  
+  // xor two words, these and the rest are useful for building byte streams
+  fn __xor_words(&self, words : (&Word, &Word)) -> Word {
+    let (a, b) = self.__normalize_words(words.0, words.1);
+    Word::from_bytes(&xor32(a.data.bytes(), b.data.bytes()))
+  }
+  // return result of a logical and on two 32 byte words
+  fn __and_words(&self, words : (&Word, &Word)) -> Word {
+    let (a, b) = self.__normalize_words(words.0, words.1);
+    Word::from_bytes(&and32(a.data.bytes(), b.data.bytes()))
+  }
+  // return the result of flipping the bits in a 32 byte words
+  fn __not_word(&self, word : &Word) -> Word {
+    Word::from_bytes(&not32(&rpad32(&word.data.bytes())))
+  }
+  // return result of a logical or on two 32 byte words
+  fn __or_words(&self, words : (&Word, &Word)) -> Word {
+    let (a, b) = self.__normalize_words(words.0, words.1);
+    Word::from_bytes(&or32(a.data.bytes(), b.data.bytes()))
   }
 }
 
@@ -308,34 +371,36 @@ const  EMPTY_BYTES32   :    [u8;32]       =   [0;32];
 const  ZERO_INDEX      :    usize         =   0;
 const  ZERO_OFFSET     :    usize         =   1;
 const  ONE_WORD        :    usize         =   1;
-
+    
 fn marshal_pre(fixed: &str) -> Vec<u8> {
   let ost = &fixed[..2] == "0x"; hex_to_bytes(&fixed[shift(ost)..])
 }
 fn shift(b : bool) -> usize { ((b as u8) << (b as u8) << 0) as usize }
 
-use con::{ bytes_to_hex, hex_to_bytes };
+use  con::{ bytes_to_hex, hex_to_bytes };
+use util::{       lpad32, rpad32       };
+use util::{ xor32, and32, not32, or32  };
 
-// ----------------------------------------------------------------------------
-/* symmetry is performant
--------------------------------------------------------------------------------
-                                                      MIT License 2024 Maka  */
-// ----------------------------------------------------------------------------
-// End of core.
+/*
+   End of core.
+  //////////////////////////////////////////////////////////////////////// */
 
 /* ----------------------------------------------------------------------------
-External / Imported (this lib can be 3 files.. but does it really need to be)
+                          MIT License 2024 Maka                              */
+
+
+
+// ----------------------------------------------------------------------------
+/* ----------------------------------------------------------------------------
+ Otherwise Imported (this lib can be 3 files.. but does it really need to be)
 -----------------------------------------------------------------------------*/
 /* 
  @title  : Kwl32::util 
  @notice : some tools for Kawala 
  @author : Maka 
-
- Notes to self : Try to do at least one thing well, then leave it at that.
 */
-
 /* ----------------------------------------------------------------------------
-Util.
+ Note (to self) : Try to do at least one thing well, then leave it at that.
 -----------------------------------------------------------------------------*/
 pub mod util {
   pub fn rpad32(bytes: &[u8]) -> [u8; 32] {
@@ -351,8 +416,8 @@ pub mod util {
 //-----------------------------------------------------------------------------
 // map can be better than simd for small arrays and we are working on 32 bytes
 // *NOTE* so profile these!
-#[cfg(feature = "simd")]
-use std::simd::{ u8x16, SimdFloat };
+  #[cfg(feature = "simd")]
+  use std::simd::{ u8x16, SimdFloat };
 
   fn _fab(f: &dyn Fn(u8,u8) -> u8, a: &[u8], b: &[u8]) -> [u8;32] {
     if a.len() != b.len() || a.len() != 32 { return [0;32]; }
@@ -374,7 +439,7 @@ use std::simd::{ u8x16, SimdFloat };
 
   pub fn not32(a: &[u8]          ) -> [u8;32] { 
     if a.len() != 32 { return [0;32]; }
-    let mut buf = [0u8;32]; (0..32) . for_each(|i|buf[i] = (!a[i])); buf
+    let mut buf = [0u8;32]; (0..32) . for_each(|i|buf[i] = notu8(a[i])); buf
   }  
  
   pub fn or32 (a: &[u8], b: &[u8]) -> [u8;32] { _fab(&oru8 , a, b) }
@@ -382,65 +447,20 @@ use std::simd::{ u8x16, SimdFloat };
   fn xoru8(a: u8, b: u8) -> u8 { a ^ b } fn andu8(a: u8, b: u8) -> u8 { a & b }
   fn notu8(a: u8)        -> u8 { ! a   } fn oru8 (a: u8, b: u8) -> u8 { a | b }
 }
+/*
+   End of util.
+  //////////////////////////////////////////////////////////////////////// */
+  
 /* ----------------------------------------------------------------------------
-Main for Testing..
------------------------------------------------------------------------------*/
+   @title  : Bai::con - Basic (as in) ascii (hex) integer (bytes) converter
+   @author : Maka
 
-fn main(){
-
-  println!("Address => ");
-  let word      = "000000000000000000000000f27ac2eed7f757038fde1ab1b242fa8f1389a0aa";
-  
-  let calldata  = Calldata::from_hex(word);
-  println!("{:?}", calldata);
-  
-  let worddata  = Word::from_hex(word);
-  println!("{:?}", worddata);
-  
-  let viewdata  = View::new(calldata, WithSig::False);
-  println!("{:?}", viewdata.data());
-  
-  println!("{:?}", viewdata.prefixed());
-  println!("{:-<1$}", "", 100);
-   
-  println!("View struct =>"); 
-  
-  let pagedata  = Calldata::from_hex("0x3593564c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000004a817c80000000000000000000000000000000000000000000000000000000000000000030b000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000000400000000000000000000000003fc91a3afd70395cd496c647d5a6cc9d4b2b7fad00000000000000000000000000000000000000000000000000005af3107a400000000000000000000000000000000000000000000000000000000000000001000000000000000000000000008c14ed4f602ac4d2be8ed9c4716307c73e9a83a800000000000000000000000000000000000000000000000000002d79883d2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002b0d500b1d8e8ef31e21c99d1db9a6444d3adf12700001f42791bca1f2de4661ed88a30c99a7a9449aa8417400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000d500b1d8e8ef31e21c99d1db9a6444d3adf1270000000000000000000000000f27ac2eed7f757038fde1ab1b242fa8f1389a0aa8000000000000000000000000000000000000000000000000000000000000000");
-  let page      = View::new(pagedata, WithSig::True);
-  println!("{:?}", page);
-  println!("{:?}", page.prefixed());
-  println!("{:?}", page.data());
-  println!("{:?}", page.page());
-  println!("{:?}", page.data());
-  println!("{:?}", page.word(20));
-  println!("{:?}", page.words(0,20));
-  
-  page.summary();
-  
-  println!("{:-<1$}", "", 100);
-   
-  println!("Signature + Calldata struct =>"); 
-  let siguint  = "0x2e1a7d4d0000000000000000000000000000000000000000000000000000000000000000";
-  println!("{:?}", Signature::from_hex(&siguint[0..10])); // will trunc
-  
-  let call = Calldata::from_hex(siguint);
-  println!("{:?}", call);
-  println!("Bytes  => {:?}", call.bytes());
-  println!("Hex    => {:?}", call.hex());
-  println!("Prefix => {:?}", call.prefixed());
-  
-}
-
-// ----------------------------------------------------------------------------
-// @title  : Bai::con - Basic (as in) ascii (hex) integer (bytes) converter
-// @author : Maka
-
-// @note   : embedded style solution.. works on upper and lower nibbles 
-//           using a minimal lookup table.
-// errors  : put garbage in get garbage out.. if you pass a value that 
-//           can't be parsed you can receive malformed data, else error 
-//           handling adheres to the unwrap_or_default philosophy.
-// ----------------------------------------------------------------------------
+   @notice : embedded style solution.. works on upper and lower nibbles 
+           using a minimal lookup table.
+   errors  : put garbage in get garbage out.. if you pass a value that 
+           can't be parsed you can receive malformed data, else error 
+           handling adheres to the unwrap_or_default philosophy.
+// --------------------------------------------------------------------------*/
 
 pub mod con {
 
@@ -488,6 +508,63 @@ pub mod con {
   ];
 }
 
+/*
+   End of con.
+  //////////////////////////////////////////////////////////////////////// */
+
 /* symmetry is performant
 -------------------------------------------------------------------------------
-                                                      MIT License 2024 Maka  */ 
+                                                      MIT License 2024 Maka  */
+ 
+ 
+ ////////////////////////////////////////////////////////////////////////////                                                      
+/* ----------------------------------------------------------------------------
+Main for Testing..
+----------------------------------------------------------------------------*/
+
+fn main(){
+
+  println!("Address => ");
+  let word      = "000000000000000000000000f27ac2eed7f757038fde1ab1b242fa8f1389a0aa";
+  
+  let calldata  = Calldata::from_hex(word);
+  println!("{:?}", calldata);
+  
+  let worddata  = Word::from_hex(word);
+  println!("{:?}", worddata);
+  
+  let viewdata  = View::new(calldata, WithSig::False);
+  println!("{:?}", viewdata.data());
+  
+  println!("{:?}", viewdata.prefixed());
+  println!("{:-<1$}", "", 100);
+   
+  println!("View struct =>"); 
+  
+  let pagedata  = Calldata::from_hex("0x3593564c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000004a817c80000000000000000000000000000000000000000000000000000000000000000030b000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000000400000000000000000000000003fc91a3afd70395cd496c647d5a6cc9d4b2b7fad00000000000000000000000000000000000000000000000000005af3107a400000000000000000000000000000000000000000000000000000000000000001000000000000000000000000008c14ed4f602ac4d2be8ed9c4716307c73e9a83a800000000000000000000000000000000000000000000000000002d79883d2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002b0d500b1d8e8ef31e21c99d1db9a6444d3adf12700001f42791bca1f2de4661ed88a30c99a7a9449aa8417400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000d500b1d8e8ef31e21c99d1db9a6444d3adf1270000000000000000000000000f27ac2eed7f757038fde1ab1b242fa8f1389a0aa8000000000000000000000000000000000000000000000000000000000000000");
+  let page      = View::new(pagedata, WithSig::True);
+  println!("{:?}", page);
+  println!("{:?}", page.prefixed());
+  println!("{:?}", page.data());
+  println!("{:?}", page.page());
+  println!("{:?}", page.data());
+  println!("{:?}", page.word(20));
+  println!("{:?}", page.words(0,20));
+  
+  page.summary();
+  
+  println!("{:-<1$}", "", 100);
+   
+  println!("Signature + Calldata struct =>"); 
+  let siguint  = "0x2e1a7d4d0000000000000000000000000000000000000000000000000000000000000000";
+  println!("{:?}", Signature::from_hex(&siguint[0..10])); // will trunc
+  
+  let call = Calldata::from_hex(siguint);
+  println!("{:?}", call);
+  println!("Bytes  => {:?}", call.bytes());
+  println!("Hex    => {:?}", call.hex());
+  println!("Prefix => {:?}", call.prefixed());
+  
+}
+
+// ------ 1 love 
