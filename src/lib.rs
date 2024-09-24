@@ -1,8 +1,8 @@
 /* ----------------------------------------------------------------------------
 
- @title  : Kawala - Just a Kwl Data Companion (Crafted to a high Kawalaty)
+ @title  : Kawala - Just a Kawl Data Companion (Crafting to a high Kawalaty)
  @author : Maka 
-                                                           MIT License 2024 */
+                                                           MIT License 2024  */
 // --------------------------------------------------------------------------*/
 
 /* Bytes type
@@ -182,6 +182,24 @@ impl DataTrait for Word {
   }
 }
 
+impl Word {
+  /* 
+  So many of the functions want to work on a common 32 byte word, and in the 
+  vast majority of cases that is fine. It's unlikely we would go through the 
+  overhead of a View struct to work on less, but there are cases where the end 
+  of a stream or array spans less than 32, and we still want to support that, 
+  as well as have an ability to craft from a very primitive state.. 
+  add command byte > right pad > xor amount and address to create stream, etc.
+  */
+  fn as_bytes32(&self) -> [u8;32] {
+    match &self.data {
+      Bytes::Bytes32(x) => *x,
+      Bytes::Array(x)   => rpad32(&x . as_slice()),
+      Bytes::Bytes4(x)  => rpad32(x)
+ 
+    }
+  }
+}
 /* ----------------------------------------------------------------------------
  View structure
 -----------------------------------------------------------------------------*/
@@ -274,7 +292,11 @@ impl View {
 View cont..      destructive functions that mutate state
 -----------------------------------------------------------------------------*/
   ///////////////////////////////////////////////////////////////////////////  
- 
+  
+  // will trunk to 4 bytes, but return [0u8;4] if under, since wouldn't be a sig
+  fn replace_sig(&mut self, bytes : &[u8]) -> () {
+    self.sig = Some (Signature::from_bytes(bytes))
+  }
   // private replaces a word, will replace last if pass out of bounds
   fn _replace_word(&mut self, index : usize, bytes : &[u8]) -> () {
     let slice_cap = std::cmp::min(WORD_LEN, bytes.len());
@@ -300,44 +322,54 @@ View cont..      destructive functions that mutate state
     let word = self.__word(index);
     self.replace_word_from_bytes(index, &rpad32(word.data.bytes()))
   }
-  
+  // merge no overlap
   fn xor_a_into_b(&mut self, array_a : &[u8], index_b: usize) -> () {
     let _a = Word::from_bytes(array_a); let _b = self.__word(index_b);
     self.replace_word_from_bytes(index_b, &self.__xor_words((&_a, _b)).bytes())
- }
+  }
+  // remove difference
   fn and_a_into_b(&mut self, array_a : &[u8], index_b: usize) -> () {
     let _a = Word::from_bytes(array_a); let _b = self.__word(index_b);
     self.replace_word_from_bytes(index_b, &self.__and_words((&_a, _b)).bytes())
- }
- 
+  }
+  // merge with overlap  (god tier?)
   fn or_a_into_b(&mut self, array_a : &[u8], index_b: usize) -> () {
     let _a = Word::from_bytes(array_a); let _b = self.__word(index_b);
     self.replace_word_from_bytes(index_b, &self.__or_words((&_a, _b)).bytes())
- }
- 
-  fn not_a_into_a(&mut self, index_b: usize) -> () {
-    let _a = self.__word(index_b);
-    self.replace_word_from_bytes(index_b, &self.__not_word(&_a).bytes())
- }
-
-  fn _fop(
-    &mut self, 
-    f     : &dyn Fn((&Word, &Word)) -> Word, 
-    array : &[u8], index : usize
-  ) -> () {
+  }
+  // flip 'em, the bird.
+  fn not_a_into_a(&mut self, index_a: usize) -> () {
+    let _a = self.__word(index_a);
+    self.replace_word_from_bytes(index_a, &self.__not_word(&_a).bytes())
+  }
+  /* 
+    ---------------------------------------------------------------------------
+    Issue passing self.method functions as a params when mutable:
+    Where mutable, it feels I need to better understand the borrower checker
+    or drop the refs for the abstraction to result in less code when calling,
+    than just naivly copy pasting the same thing a few times
+    see _fops(). Come back to this later. [@Reader.. If you know, school me.]
+    ---------------------------------------------------------------------------
+    fn _fop<F>(
+      &mut self, f : F, array : &[u8], index : usize
+    ) -> () where F: FnOnce((Word, Word)) -> Word {
     let _a = Word::from_bytes(array); let _b = self.__word(index);
     self.replace_word_from_bytes(index, &f((&_a, _b)).bytes())
-  }
+    }  
+    // what iteration of this are we on, is it even relevent now?
+    ---------------------------------------------------------------------------
+  */
+  
 /* ----------------------------------------------------------------------------
 View cont..   exposed functions that take or return Kawala types
 -----------------------------------------------------------------------------*/
    ///////////////////////////////////////////////////////////////////////////  
 
-
+  // append a word to the end 
   fn __append(&mut self, word : Word) -> () {
     self.page.push(word)
   }
-
+  // pop a word from the end
   fn __pop(&mut self) -> Word {
     self.page.pop() . unwrap_or(Word::from_bytes(&EMPTY_BYTES32)) 
   }  
@@ -356,14 +388,24 @@ View cont..   exposed functions that take or return Kawala types
       std::cmp::min(end, &self.page.len() -ZERO_OFFSET)
     ]
   }
+  /* 
+    unneeded now? -------------------------------------------------------------
   // shouldn't be relied on, will pad to right as is the default
+  fn __normalize_words(&self, a : &Word, b : &Word) -> (Word, Word) {
+    let f = |x| Word::from_bytes(x); (f(&a.as_bytes32()), f(&b.as_bytes32()))
+  }
+  -----------------------------------------------------------------------------
+  // legacy implementation - lifting moved to dedicated handler
   fn __normalize_words(&self, a : &Word, b : &Word) -> (Word, Word) {
     let f = |x| Word::from_bytes(x);
     if a.data.len() == WORD_LEN && WORD_LEN == b.data.len() { 
       return (f(a.data.bytes()), f(b.data.bytes())); } else {
       (f(&rpad32(a.data.bytes())), f(&rpad32(b.data.bytes())))
-    }
-  }  
+      }
+  } 
+  -----------------------------------------------------------------------------
+  */
+    
   // xor two words, these and the rest are useful for building byte streams
   fn __xor_words(&self, words : (&Word, &Word)) -> Word {
     self._fops(&xor32, (words.0, words.1))
@@ -372,7 +414,7 @@ View cont..   exposed functions that take or return Kawala types
   fn __and_words(&self, words : (&Word, &Word)) -> Word {
     self._fops(&and32, (words.0, words.1))
   }
-  // return the result of flipping the bits in a 32 byte words
+  // return the result of flipping the bits in a single 32 byte word
   fn __not_word(&self, word : &Word) -> Word {
     Word::from_bytes(&not32(&rpad32(&word.data.bytes())))
   }
@@ -380,14 +422,13 @@ View cont..   exposed functions that take or return Kawala types
   fn __or_words(&self, words : (&Word, &Word)) -> Word {
     self._fops(&or32, (words.0, words.1))
   }
-  
+  // higher order abstraction to save some repetition 
   fn _fops(
     &self, 
-    f     : &dyn Fn(&[u8], &[u8]) -> [u8;WORD_LEN], 
+    f     : &dyn Fn(&[u8;WORD_LEN], &[u8;WORD_LEN]) -> [u8;WORD_LEN], 
     words : (&Word, &Word)
   ) -> Word {
-    let (a, b) = self.__normalize_words(&words.0, &words.1);
-    Word::from_bytes(&f(a.data.bytes(), b.data.bytes()))
+    Word::from_bytes(&f(&words.0.as_bytes32(), &words.1.as_bytes32()))
   } 
 }
 
@@ -395,8 +436,9 @@ View cont..   exposed functions that take or return Kawala types
 Appendix
 -----------------------------------------------------------------------------*/
   ///////////////////////////////////////////////////////////////////////////  
-
-static EMPTY_U8_SLICE  :    [u8;0]        =   [0;0]; 
+  
+// constants
+const  EMPTY_U8_SLICE  :    [u8;0]        =   [0;0]; 
 const  SIG_LEN         :    usize         =   4;
 const  EMPTY_SIG       :    [u8;4]        =   [0;4]; 
 const  WORD_LEN        :    usize         =   32;
@@ -405,12 +447,13 @@ const  EMPTY_BYTES32   :    [u8;32]       =   [0;32];
 const  ZERO_INDEX      :    usize         =   0;
 const  ZERO_OFFSET     :    usize         =   1;
 const  ONE_WORD        :    usize         =   1;
-    
+// marshall through prefixed hex strings    
 fn marshal_pre(fixed: &str) -> Vec<u8> {
   let ost = &fixed[..2] == "0x"; hex_to_bytes(&fixed[shift(ost)..])
-}
+}        
+// just removes the need for an if to check hex, or multiplication of the bool.
 fn shift(b : bool) -> usize { ((b as u8) << (b as u8) << 0) as usize }
-
+// mod imports
 use  con::{ bytes_to_hex, hex_to_bytes };
 use util::{       lpad32, rpad32       };
 use util::{ xor32, and32, not32, or32  };
@@ -447,8 +490,7 @@ pub mod util {
   #[cfg(feature = "simd")]
   use std::simd::{ u8x16, SimdFloat };
 
-  fn _fab(f: &dyn Fn(u8,u8) -> u8, a: &[u8], b: &[u8]) -> [u8;32] {
-    if a.len() != b.len() || a.len() != 32 { return [0;32]; }
+  fn _fab(f: &dyn Fn(u8,u8) -> u8, a: &[u8;32], b: &[u8;32]) -> [u8;32] {
     #[cfg(feature = "simd")]
     {
       let a_simd = u8x16::from_slice(a);
@@ -461,16 +503,15 @@ pub mod util {
     buf    
   }
 
-  pub fn xor32(a: &[u8], b: &[u8]) -> [u8;32] { _fab(&xoru8, a, b) }
+  pub fn xor32(a: &[u8;32], b: &[u8;32]) -> [u8;32] { _fab(&xoru8, a, b) }
 
-  pub fn and32(a: &[u8], b: &[u8]) -> [u8;32] { _fab(&andu8, a, b) }  
+  pub fn and32(a: &[u8;32], b: &[u8;32]) -> [u8;32] { _fab(&andu8, a, b) }  
 
-  pub fn not32(a: &[u8]          ) -> [u8;32] { 
-    if a.len() != 32 { return [0;32]; }
+  pub fn not32(a: &[u8;32]          ) -> [u8;32] { 
     let mut buf = [0u8;32]; (0..32) . for_each(|i|buf[i] = notu8(a[i])); buf
   }  
  
-  pub fn or32 (a: &[u8], b: &[u8]) -> [u8;32] { _fab(&oru8 , a, b) }
+  pub fn or32 (a: &[u8;32], b: &[u8;32]) -> [u8;32] { _fab(&oru8 , a, b) }
   
   fn xoru8(a: u8, b: u8) -> u8 { a ^ b } fn andu8(a: u8, b: u8) -> u8 { a & b }
   fn notu8(a: u8)        -> u8 { ! a   } fn oru8 (a: u8, b: u8) -> u8 { a | b }
@@ -540,3 +581,64 @@ pub mod con {
   //////////////////////////////////////////////////////////////////////// */
 /* -------------------------------------------------------------------------------
                                                          MIT License 2024 Maka  */ 
+ ////////////////////////////////////////////////////////////////////////////                                                      
+/* ----------------------------------------------------------------------------
+Main for Testing..
+----------------------------------------------------------------------------*/
+
+fn main(){
+
+  println!("Address => ");
+  let word      = "000000000000000000000000f27ac2eed7f757038fde1ab1b242fa8f1389a0aa";
+  
+  let calldata  = Calldata::from_hex(word);
+  println!("{:?}", calldata);
+  
+  let worddata  = Word::from_hex(word);
+  println!("{:?}", worddata);
+  
+  let viewdata  = View::new(calldata, WithSig::False);
+  println!("{:?}", viewdata.data());
+  
+  println!("{:?}", viewdata.prefixed());
+  println!("{:-<1$}", "", 100);
+   
+  println!("View struct =>"); 
+  
+  let pagedata  = Calldata::from_hex("0x3593564c000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000004a817c80000000000000000000000000000000000000000000000000000000000000000030b000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000000400000000000000000000000003fc91a3afd70395cd496c647d5a6cc9d4b2b7fad00000000000000000000000000000000000000000000000000005af3107a400000000000000000000000000000000000000000000000000000000000000001000000000000000000000000008c14ed4f602ac4d2be8ed9c4716307c73e9a83a800000000000000000000000000000000000000000000000000002d79883d2000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002b0d500b1d8e8ef31e21c99d1db9a6444d3adf12700001f42791bca1f2de4661ed88a30c99a7a9449aa8417400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000600000000000000000000000000d500b1d8e8ef31e21c99d1db9a6444d3adf1270000000000000000000000000f27ac2eed7f757038fde1ab1b242fa8f1389a0aa8000000000000000000000000000000000000000000000000000000000000000");
+  let mut page  = View::new(pagedata, WithSig::True);
+  println!("{:?}", page);
+  println!("{:?}", page.prefixed());
+  println!("{:?}", page.data());
+  println!("{:?}", page.page());
+  println!("{:?}", page.data());
+  println!("{:?}", page.words(0,20));
+  println!("20  :{:?}", page.word(20));
+  
+  let x = page.__word(0).as_bytes32(); 
+  page.xor_a_into_b(&x, 20);
+  println!("20x :{:?}", page.word(20));
+  
+  page.and_a_into_b(&x, 20);
+  println!("20xa:{:?}", page.word(20));
+
+  println!("{:-<1$}", "", 100);
+  println!("{:-<1$}", "", 100);
+  page.summary();
+  
+  println!("{:-<1$}", "", 100); 
+  println!("{:-<1$}", "", 100);
+  
+  println!("Signature + Calldata struct =>"); 
+  let siguint  = "0x2e1a7d4d0000000000000000000000000000000000000000000000000000000000000000";
+  println!("{:?}", Signature::from_hex(&siguint[0..10])); // will trunc
+  
+  let call = Calldata::from_hex(siguint);
+  println!("{:?}", call);
+  println!("Bytes  => {:?}", call.bytes());
+  println!("Hex    => {:?}", call.hex());
+  println!("Prefix => {:?}", call.prefixed());
+  
+}
+
+// ------ 1 love 
