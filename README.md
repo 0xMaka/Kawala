@@ -1,6 +1,6 @@
 # Kawala - Just a Kwl Data Companion (High in Kawality)
 
-   <img src="assets/kawala-800.png" width=800 >
+   <img src="misc/assets/kawala-800.png" width=800 >
 <!-- ![kwla](https://github.com/user-attachments/assets/817f0c04-989b-439d-8ab7-91f996b288c5) -->
 
 ---

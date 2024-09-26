@@ -16,14 +16,8 @@ pub enum Bytes {
  Array  (Vec<u8>)
 }
 
-trait BytesTrait {
-  fn bytes(&self) -> &[u8];
-  fn hex(&self)   -> String;
-  fn len(&self)   -> usize;
-}
-
-impl BytesTrait for Bytes {
-  fn bytes(&self) -> &[u8] {
+impl Bytes {
+  pub fn bytes(&self) -> &[u8] {
     match self {
       Bytes::Bytes4(bytes)  => bytes,
       Bytes::Bytes32(bytes) => bytes,
@@ -31,11 +25,11 @@ impl BytesTrait for Bytes {
     }
   }
 
-  fn hex(&self) -> String {
+  pub fn hex(&self) -> String {
     bytes_to_hex(self.bytes()) // will unwrap_or_default
   }
 
-  fn len(&self) -> usize  { self.bytes().len() }
+  pub fn len(&self) -> usize  { self.bytes().len() }
 }
 
 impl<I: std::slice::SliceIndex<[u8]>> std::ops::Index<I> for Bytes {
@@ -59,37 +53,27 @@ pub struct Calldata {
   data : Bytes
 }
 
-pub trait DataTrait {
-  fn new(data : Bytes)          ->  Self;
-  fn bytes(&self)               ->  &[u8];
-  fn hex(&self)                 ->  String;
-  fn from_bytes(bytes : &[u8])  ->  Self;
-  fn from_hex(string : &str)    ->  Self;
-}
-
-impl DataTrait for Calldata {
+impl Calldata {
   fn new(bytes : Bytes) -> Self {
       Calldata { data : bytes }
   }
 
-  fn bytes(&self) -> &[u8] {
+  pub fn bytes(&self) -> &[u8] {
     self.data.bytes()
   }
 
-  fn hex(&self) -> String {
+  pub fn hex(&self) -> String {
     self.data.hex()
   }
 
-  fn from_bytes(bytes : &[u8]) -> Self {
+  pub fn from_bytes(bytes : &[u8]) -> Self {
     Self::new(Bytes::Array(bytes.to_vec()))
   }
 
-  fn from_hex(string : &str) -> Self {
+  pub fn from_hex(string : &str) -> Self {
     Self::new(Bytes::Array(marshal_pre(string)))
   }
-}
 
-impl Calldata {
   pub fn hex_0x(&self) -> String {
     "0x".to_owned() + &self.data.hex()
   }
@@ -105,21 +89,25 @@ pub struct Signature {
   data : Bytes
 }
 
-impl DataTrait for Signature {
+impl Signature {
 
   fn new(bytes : Bytes) -> Self {
       Signature { data : bytes }
   }
 
-  fn bytes(&self) -> &[u8] {
+  pub fn bytes(&self) -> &[u8] {
     self.data.bytes()
   }
 
-  fn hex(&self)  -> String {
+  pub fn hex(&self)  -> String {
     self.data.hex()
   }
 
-  fn from_bytes(array : &[u8]) -> Self {
+  pub fn len(&self)  -> usize {
+    self.data.len()
+  }
+
+  pub fn from_bytes(array : &[u8]) -> Self {
     Self::new(Bytes::Bytes4(
       array[..std::cmp::min(SIG_LEN, array.len())]
       . try_into()
@@ -127,7 +115,7 @@ impl DataTrait for Signature {
     ))
   }
 
-  fn from_hex(string : &str) -> Self {
+  pub fn from_hex(string : &str) -> Self {
     let bytes = marshal_pre(string);
     Self::new(Bytes::Bytes4({
       bytes[..std::cmp::min(SIG_LEN, bytes.len())]
@@ -149,21 +137,27 @@ pub struct Word {
   data : Bytes
 }
 
-impl DataTrait for Word {
+impl Word {
 
   fn new(bytes : Bytes) -> Self {
     Word { data : bytes }
   }
 
-  fn bytes(&self) -> &[u8] {
+  pub fn bytes(&self) -> &[u8] {
     self.data.bytes()
   }
 
-  fn hex(&self)  -> String {
+  pub fn hex(&self)  -> String {
     self.data.hex()
   }
 
-  fn from_bytes(array : &[u8]) -> Self {
+  pub fn data(&self) -> &Bytes {
+    &self.data
+  }   
+
+  pub fn len(&self)  -> usize  { self.bytes().len() }
+
+  pub fn from_bytes(array : &[u8]) -> Self {
     let slice = &array[..std::cmp::min(WORD_LEN, array.len())];
     match array.len() == WORD_LEN {
       true => Self::new(Bytes::Bytes32(
@@ -179,12 +173,10 @@ impl DataTrait for Word {
     }
   }
 
-  fn from_hex(string : &str) -> Self {
+  pub fn from_hex(string : &str) -> Self {
     Self::from_bytes(marshal_pre(string).as_slice())
   }
-}
 
-impl Word {
   /*
   So many of the functions want to work on a common 32 byte word, and in the
   vast majority of cases that is fine. It's unlikely we would go through the
@@ -298,11 +290,14 @@ View cont..                 common functionality
   // returns the number of word segments in array
   pub fn word_count(&self) -> usize { self.page.len() }
   // quick prints a summary
-  pub fn summary(&self) -> () {
-    println!(
-      "Signature: {}\nData:\n{}\nView:\n{:?}\nCount: {}",
-      self.sig(), self.data(), self.page(), self.word_count()
-    );
+  pub fn summary(&self) {
+    if self.word_count() > SUMMARY_COUNT {
+      print!("Sig: {}\nData:\n{}\nView:\n{:?}\nCount: {}\n",
+      self.sig(), self.data(), self.page(), self.word_count()) 
+    } else {
+      print!("Sig: {}\nData:  {}\nView:  {:?}\nCount: {}\n",
+      self.sig(), self.data(), self.page(), self.word_count()) 
+    }
   }
 
 /* ----------------------------------------------------------------------------
@@ -341,10 +336,18 @@ View cont..      destructive functions that mutate state
   pub fn append(&mut self, string: &str) -> () {
     self.__append(Word::from_hex(string))
   }
+  // append empty word
+  pub fn append_empty(&mut self) -> () {
+    self.__append(Word::from_bytes(&EMPTY_BYTES32))
+  }
   // zero a word - equivalant of &'ing with empty but faster here
   pub fn clear(&mut self, index : usize) -> () {
     self._replace_word(index, &EMPTY_BYTES32)
-  } 
+  }
+  // pop the last item, return the result of its hex method
+  pub fn pop(&mut self) -> String {
+    self.__pop().hex()
+  }
   // replace word with left padded equivalent
   pub fn left_pad(&mut self, index : usize) -> () {
     let word = self.__word(index);
@@ -377,11 +380,11 @@ View cont..      destructive functions that mutate state
   }
   // *private* perform xor on the 2 tail elements, consume the tail
   fn _fold (&mut self) -> () {
-    let buf =  self.__pop(); self.xor_into(self.page.len() - 1, buf.bytes())
+    let buf =  self.__pop(); self.xor_into(self.page.len() - ONE, buf.bytes())
   }
   // public caller for above 
   pub fn xor_fold(&mut self) -> () {
-    if self.page.len() < 2 { return };
+    if self.page.len() < MIN_FOLD { return };
     self._fold()
   }
   // xor fold down to the last element 
@@ -480,6 +483,11 @@ const  EMPTY_BYTES32   :    [u8;32]       =   [0;32];
 const  ZERO_INDEX      :    usize         =   0;
 const  ZERO_OFFSET     :    usize         =   1;
 const  ONE_WORD        :    usize         =   1;
+const  SUMMARY_COUNT   :    usize         =   2;
+const  ONE             :    usize         =   1;
+const  TWO             :    usize         =   2;
+const  MAX_FOLD        :    usize         =   2;
+
 // marshall through prefixed hex strings
 fn marshal_pre(fixed: &str) -> Vec<u8> {
   let ost = &fixed[..2] == "0x"; hex_to_bytes(&fixed[shift(ost)..])
@@ -497,4 +505,3 @@ use kwl32::util::{      roll32l, roll32r      };
   //////////////////////////////////////////////////////////////////////// */
 /* ----------------------------------------------------------------------------
                                                      MIT License 2024 Maka  */
-
