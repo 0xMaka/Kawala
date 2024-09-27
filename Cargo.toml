@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
-# | Kawala  :  A high kawalty tool for Koalas that take pride in their work.   |
-# |                                                                  - 1 love  |
+# | Kawala : A high kawalty crafter for Koalas that take pride in their work.  |
+# |                                                                 - 1 love   |
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 [package]                                                                     #|
@@ -21,9 +21,5 @@ path         = "src/lib.rs"
 [dependencies]
 [features]
 simd = []
-
-[[bin]]
-name = "basic_stream" 
-path = "examples/basic_stream.rs" 
                                                                              ##|
 # ------------------------------------------------------------------------------

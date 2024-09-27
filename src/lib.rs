@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
 
- @title  : Kawala - Just a Kwl Data Companion (Crafting Kawality)
+ @title  : Kawala - Just a Kwl Data Companion (High in Kawality)
  @author : Maka
                                                            MIT License 2024  */
 // --------------------------------------------------------------------------*/
@@ -353,7 +353,7 @@ View cont..      destructive functions that mutate state
     let word = self.__word(index);
     self.replace_from_bytes(index, &pad32l(word.data.bytes()))
   }
-  // replace word with left padded equivalent
+  // replace word with right padded equivalent
   pub fn right_pad(&mut self, index : usize) -> (){
     let word = self.__word(index);
     self.replace_from_bytes(index, &pad32r(word.data.bytes()))
@@ -389,7 +389,7 @@ View cont..      destructive functions that mutate state
   }
   // xor fold down to the last element 
   pub fn xor_fold_all(&mut self) -> () { 
-    let len = self.page.len(); if len < 2 { return };
+    let len = self.page.len(); if len < MIN_FOLD { return };
     (1..len).for_each(|_|self._fold())
   }
   // wrap the word at index around to the right by the given shift 
@@ -485,8 +485,7 @@ const  ZERO_OFFSET     :    usize         =   1;
 const  ONE_WORD        :    usize         =   1;
 const  SUMMARY_COUNT   :    usize         =   2;
 const  ONE             :    usize         =   1;
-const  TWO             :    usize         =   2;
-const  MAX_FOLD        :    usize         =   2;
+const  MIN_FOLD        :    usize         =   2;
 
 // marshall through prefixed hex strings
 fn marshal_pre(fixed: &str) -> Vec<u8> {
@@ -495,7 +494,7 @@ fn marshal_pre(fixed: &str) -> Vec<u8> {
 // just removes the need for an if to check hex, or multiplication of the bool.
 fn shift(b : bool) -> usize { ((b as u8) << (b as u8) << 0) as usize }
 
-/* mod imports */     mod bai; mod kwl32;
+/* mod imports */    pub mod bai; pub mod kwl32;
 use    bai::con::{ bytes_to_hex, hex_to_bytes };
 use kwl32::util::{       pad32l, pad32r       };
 use kwl32::util::{ xor32, and32, not32, or32  };
