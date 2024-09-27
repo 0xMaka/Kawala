@@ -1,4 +1,6 @@
+//-------------------------------------------------------------------------------------------------
 use kawala::{ View, Calldata, WithSig };
+//-------------------------------------------------------------------------------------------------
 
 /*  Foreword:
   Another example that could do without the overhead, though kept simple should make clear some 
@@ -30,7 +32,7 @@ use kawala::{ View, Calldata, WithSig };
 // ------------------------------------------------------------------------------------------------
 
  /* In this scenario we have a v2 swap that won't go through, and we are going to run a 
-    simulation using tenderly so just want to change a couple of values and grab the hex.         */
+    simulation using tenderly so just want to change a couple of values and grab the hex.        */
   
   const AMOUNT_MIN_SLOT : usize = 1;
   const TIME_LIMIT_SLOT : usize = 4;
@@ -38,7 +40,7 @@ use kawala::{ View, Calldata, WithSig };
 
  /* Could be they have not accounted for tax on transfer, could be some vesting mechanic.
     Good test is trying the sim with `amountOutMin` at zero just to see if it should go 
-    through at all, or if there is something more sinister (perhaps just more inept) to it.         */
+    through at all, or if there is something more sinister (perhaps just more inept) to it.      */
   fn zero_amount_min(view: &mut View) -> () {
     view.clear(AMOUNT_MIN_SLOT);    // we can `clear()` to replace the word with a [0u8;32]
   }
@@ -59,15 +61,15 @@ use kawala::{ View, Calldata, WithSig };
     view.summary();               // prints an overview of the calldata
   } */
 
- /* Kawala stores and works on raw bytes only using hex for pretty printing, by default the hex
-    is not prefixed, To include a leading "0x", `Views` have a getter in line with the standard. */
+ /* Kawala stores and works on raw bytes, only using hex for pretty printing. By default the hex
+    is not prefixed but can be included via a getter in line with the standard.                  */
   fn hex_0x(view : &View) {
     println!("[+] => {}", view.hex_0x());
   }
 
+//-------------------------------------------------------------------------------------------------
 
-
-  fn main() {
+fn main() {
     let string     = "0x791ac94700000000000000000000000000000000000000000000000000000000004c3f88000000000000000000000000000000000000000000000000000ac2d7237640f900000000000000000000000000000000000000000000000000000000000000a000000000000000000000000013a48c3e0a403b6cf1a59fbd600e284e620b37ed0000000000000000000000000000000000000000000000000000000065211d050000000000000000000000000000000000000000000000000000000000000002000000000000000000000000ff970a61a04b1ca14834a43f5de4533ebddb5cc800000000000000000000000082af49447d8a07e3bd95bd0d56f35241523fbab1";
     let mut view   = View::new(Calldata::from_hex(string), WithSig::True);
     
@@ -84,4 +86,5 @@ use kawala::{ View, Calldata, WithSig };
     hex_0x(&view);
     //quick_sum(&view);
   }
-
+//-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------

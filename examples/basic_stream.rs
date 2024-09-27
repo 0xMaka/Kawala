@@ -1,14 +1,16 @@
+//-----------------------------------------------------------------------------
 use kawala::{ View, Calldata, WithSig };
+//-----------------------------------------------------------------------------
 
 fn build_basic_stream() {
   /*
 
-      Basic stream creation, otherwise known as concat with extra steps.
-      Obviously when we know our stream and our calls are working, we create
-      dedicated functions for this. But when debugging streams for our
-      contracts or troubleshooting the composition of streams for others,
-      having a visual segmentation while still retaining a granular control 
-      can be useful. Kawala `View`s provide an easy interface for this.
+     Basic stream creation, otherwise known as concat with extra steps.
+     Obviously when we know our stream and our calls are working, we create
+     dedicated functions for this. But when debugging streams for our
+     contracts or troubleshooting the composition of streams for others,
+     having a visual segmentation while still retaining a granular control 
+     can be useful. Kawala `View`s provide an easy interface for this.
 
   */
 
@@ -20,24 +22,23 @@ fn build_basic_stream() {
   // we can start from a single byte view
   let mut view = View::new(Calldata::from_hex(command1), WithSig::False);
   view.summary();
-  /*  Signature: 
-   *  Data: 01 
-   *  View: ["01"] 
-   *  Count: 1 () */
+  /* Sig: 
+     Data:  01 
+     View:  ["01"] 
+     Count: 1 () */
   // we can append following words
   [command2, amount, address] . map(|x| view.append(x));
 
   view.summary();
-  /*  Signature: 
-      Data: 01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174 
-      View: ["01", "ff", "08e8925e5c2e7de78eea", 
-      "2791bca1f2de4661ed88a30c99a7a9449aa84174"] 
-      Count: 4
-      Can see we already have our stream above if we just call the data() method
-      but for the sake of keeping it simple while exploring functionality let's 
-      build it from the elements */
+  /* Sig: 
+     Data:  01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174 
+     View:  ["01", "ff", "08e8925e5c2e7de78eea", "2791bca1f2de4661ed88a30c99a7a9449aa84174"] 
+     Count: 4
+     Can see we already have our stream above if we just call the data() method
+     but for the sake of keeping it simple while exploring functionality let's 
+     build it from the elements */
 
-  // we can pad the words to the desired side to better reflect abi encoding
+  // we can pad the words to the desired side..
 
   // to reflect abi encoding
   view.left_pad(3); 
@@ -67,10 +68,10 @@ fn build_basic_stream() {
   view.xor_fold_all();
 
   view.summary();
-  /*  Signature: 
-      Data: 01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174 
-      View: ["01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174"] 
-      Count: 1  */
+  /* Signature: 
+     Data: 01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174 
+     View: ["01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174"] 
+     Count: 1  */
   
   // we have essentially concatonated our strings
   let desired = command1.to_owned() + command2 + amount + address;
@@ -78,4 +79,6 @@ fn build_basic_stream() {
 
 }
 
+//-----------------------------------------------------------------------------
 fn main () { build_basic_stream(); }
+//-----------------------------------------------------------------------------
