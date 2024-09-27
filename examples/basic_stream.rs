@@ -25,7 +25,7 @@ fn build_basic_stream() {
   /* Sig: 
      Data:  01 
      View:  ["01"] 
-     Count: 1 () */
+     Count: 1    */
   // we can append following words
   [command2, amount, address] . map(|x| view.append(x));
 
