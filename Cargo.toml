@@ -1,11 +1,11 @@
 # ------------------------------------------------------------------------------
-# | Kawala  :  A high kawalty tool for Koalas that take pride in their work.   |
-# |                                                                  - 1 love  |
+# | Kawala : A high kawalty crafter for Koalas that take pride in their work.  |
+# |                                                                 - 1 love   |
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 [package]                                                                     #|
 name         = "kawala"
-version      = "0.1.2"
+version      = "0.1.2.1"
 authors      = ["Maka <makagucci@gmx.com>"]
 edition      = "2021"
 license      = "MIT"
@@ -22,8 +22,13 @@ path         = "src/lib.rs"
 [features]
 simd = []
 
-[[bin]]
-name = "basic_stream" 
-path = "examples/basic_stream.rs" 
+#[[bin]]
+#name = "basic_stream" 
+#path = "examples/basic_stream.rs" 
+#
+#[[bin]]
+#name = "v2mod" 
+#path = "examples/v2mod.rs" 
+
                                                                              ##|
 # ------------------------------------------------------------------------------

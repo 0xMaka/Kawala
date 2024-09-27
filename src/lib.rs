@@ -1,6 +1,6 @@
 /* ----------------------------------------------------------------------------
 
- @title  : Kawala - Just a Kwl Data Companion (Crafting Kawality)
+ @title  : Kawala - Just a Kwl Data Companion (High in Kawality)
  @author : Maka
                                                            MIT License 2024  */
 // --------------------------------------------------------------------------*/
@@ -389,7 +389,7 @@ View cont..      destructive functions that mutate state
   }
   // xor fold down to the last element 
   pub fn xor_fold_all(&mut self) -> () { 
-    let len = self.page.len(); if len < 2 { return };
+    let len = self.page.len(); if len < MIN_FOLD { return };
     (1..len).for_each(|_|self._fold())
   }
   // wrap the word at index around to the right by the given shift 
@@ -485,8 +485,7 @@ const  ZERO_OFFSET     :    usize         =   1;
 const  ONE_WORD        :    usize         =   1;
 const  SUMMARY_COUNT   :    usize         =   2;
 const  ONE             :    usize         =   1;
-const  TWO             :    usize         =   2;
-const  MAX_FOLD        :    usize         =   2;
+const  MIN_FOLD        :    usize         =   2;
 
 // marshall through prefixed hex strings
 fn marshal_pre(fixed: &str) -> Vec<u8> {
