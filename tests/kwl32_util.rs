@@ -79,8 +79,7 @@ mod kwl32_util {
     let input = [0u8;32];
     assert_eq!(util::roll32l(&input, 0), input);
   }
-   
-  
+    
   // single shift
   #[test]
   fn roll32r_single_byte_shift() {
@@ -102,28 +101,27 @@ mod kwl32_util {
     assert_eq!(util::roll32l(&input, 1), expected . as_slice());
   } 
   
-/*  
   // multi shift
   #[test]
   fn roll32r_multiple_byte_shift() {
-    let input    = [1u8; 32];
+    let input    = util::pad32r(&[1u8;16]); 
     let expected = [0u8; 16]
     . into_iter()
     . chain([1u8; 16])
-    . collect::<[u8; 32]>();
+    . collect::<Vec<u8>>();
 
-    assert_eq!(util::roll32r(&input, 16), expected);
+    assert_eq!(util::roll32r(&input, 16), expected . as_slice());
   }
   
   #[test]
   fn roll32l_multiple_byte_shift() {
-    let input    = [1u8; 32];
+    let input    = util::pad32l(&[1u8;16]); 
     let expected = [1u8; 16]
     . into_iter()
     . chain([0u8; 16])
-    . collect::<[u8; 32]>();
+    . collect::<Vec<u8>>();
 
-    assert_eq!(util::roll32l(&input, 16), expected);
+    assert_eq!(util::roll32l(&input, 16), expected . as_slice());
   }
    
   
@@ -190,10 +188,8 @@ mod kwl32_util {
 //-----------------------------------------------------------------------------------------------//
 
 //--------                        --------     NOT32     --------                        --------//
-
   
-  
- // edge case:
+  // edge case:
   #[test]
   fn xor32_same_input() {
     let a = [0xFFu8; 32];
@@ -216,8 +212,8 @@ mod kwl32_util {
 //-----------------------------------------------------------------------------------------------//
 
 //--------                        --------     NOT32     --------                        --------//
-
  
+/*  
 */
 }
 //-----------------------------------------------------------------------------
