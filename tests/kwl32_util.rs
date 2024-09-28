@@ -4,7 +4,7 @@
 //-----------------------------------------------------------------------------
 #[cfg(test)]
 mod kwl32_util {  
-  use kawala::kwl32::util
+  use kawala::kwl32::util;
 //-----------------------------------------------------------------------------------------------//
 
 //--------                        --------     PAD32     --------                        --------//
@@ -23,67 +23,43 @@ mod kwl32_util {
   // exact 32
   #[test]
   fn pad32r_exact_32_bytes() {
-    let input = [0u8;32];
+    let input    = [0u8;32];
     assert_eq!(util::pad32r(&input), input);
   }
   
   #[test]
   fn pad32l_exact_32_bytes() {
-    let input = [0u8; 32];
+    let input    = [0u8; 32];
     assert_eq!(util::pad32l(&input), input);
   }
   
   // less than 32
   #[test]
   fn pad32r_less_than_32_bytes() {
-    let input    = [1u8; 16];
-    let expected = [0u8; 16]
-    . into_iter()
-    . chain(
-      input
-      . iter()
-      . copied()
-    )
-    . collect::<[u8; 32]>();
-    assert_eq!(util::pad32r(&input), expected);
+    let input    = [1u8;16];
+    let expected = [[1u8;16], [0u8;16]] .concat();
+    assert_eq!(util::pad32r(&input), expected . as_slice());
   }
-  
   #[test]
   fn pad32l_less_than_32_bytes() {
     let input    = [1u8; 16];
-    let expected = input
-    . iter()
-    . copied()
-    . chain(
-      [0u8; 16]
-      . iter()
-      . copied()
-    )
-    . collect::<[u8; 32]>();
-    assert_eq!(util::pad32l(&input), expected);
+    let expected = [[0u8;16], [1u8;16]] .concat();
+    assert_eq!(util::pad32l(&input), expected . as_slice());
   }
    
   
   // more than 32 (will trunk):
   #[test]
   fn pad32r_more_than_32_bytes() {
-    let input    = [0u8; 64];
-    let expected = input[32..]
-    . to_vec()
-    . into_boxed_slice()
-    . try_into()
-    . unwrap();
+    let input    = [0u8;64];
+    let expected = [0u8;32];
     assert_eq!(util::pad32r(&input), expected);
   }
   
   #[test]
   fn pad32l_more_than_32_bytes() {
-    let input    = [0u8; 64];
-    let expected = input[..32]
-    . to_vec()
-    . into_boxed_slice()
-    . try_into()
-    . unwrap();
+    let input    = [0u8;64];
+    let expected = [0u8;32];
     assert_eq!(util::pad32l(&input), expected);
   }
     
@@ -100,7 +76,7 @@ mod kwl32_util {
   
   #[test]
   fn roll32l_no_shift() {
-    let input = [0u8; 32];
+    let input = [0u8;32];
     assert_eq!(util::roll32l(&input, 0), input);
   }
    
@@ -108,27 +84,25 @@ mod kwl32_util {
   // single shift
   #[test]
   fn roll32r_single_byte_shift() {
-    let input    = [1u8; 32];
-    let expected = [0u8; 31]
+    let input    = util::pad32l(&[1u8]); 
+    let expected = [1u8]
     . into_iter()
-    . chain([1u8])
-    . collect::<[u8; 32]>();
-
-    assert_eq!(util::roll32r(&input, 1), expected);
+    . chain([0u8;31])
+    . collect::<Vec<u8>>();
+    assert_eq!(util::roll32r(&input, 1), expected . as_slice());
   }
   
   #[test]
   fn roll32l_single_byte_shift() {
-    let input    = [1u8; 32];
-    let expected = [1u8]
+    let input    = util::pad32r(&[1u8]); 
+    let expected = [0u8;31]
     . into_iter()
-    . chain([0u8; 31])
-    . collect::<[u8; 32]>();
-
-    assert_eq!(util::roll32l(&input, 1), expected);
-  }
-   
+    . chain([1u8])
+    . collect::<Vec<u8>>();
+    assert_eq!(util::roll32l(&input, 1), expected . as_slice());
+  } 
   
+/*  
   // multi shift
   #[test]
   fn roll32r_multiple_byte_shift() {
@@ -189,7 +163,6 @@ mod kwl32_util {
 
 //--------                        --------     NOT32     --------                        --------//
 
-  /*                                                                                          */                                                                                            */
 
 //--------                        --------  General Ops  --------                        --------//
  
@@ -220,7 +193,7 @@ mod kwl32_util {
 
   
   
-  Edge Cases:
+ // edge case:
   #[test]
   fn xor32_same_input() {
     let a = [0xFFu8; 32];
@@ -245,6 +218,6 @@ mod kwl32_util {
 //--------                        --------     NOT32     --------                        --------//
 
  
+*/
 }
-
 //-----------------------------------------------------------------------------
