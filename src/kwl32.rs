@@ -11,15 +11,19 @@
 -----------------------------------------------------------------------------*/
 
 pub mod util {
+use std::cmp::{ min, max };
+
   // outout the result of right padding input with zeros
-  pub fn pad32r(bytes: &[u8]) -> [u8; 32] {
-    let mut padded = [0u8; 32]; padded[..bytes.len()] . copy_from_slice(bytes);
+  pub fn pad32r(bytes: &[u8]) -> [u8;32] {
+    let ost = min(32, bytes.len() as i32) as usize;
+    let mut padded = [0u8;32]; padded[..ost] . copy_from_slice(&bytes[..ost]);
     padded
   }
   // output the result of left padding input with zeros
-  pub fn pad32l(bytes: &[u8])  -> [u8; 32] {
-    let padding    = std::cmp::max(0, 32 - bytes.len());
-    let mut padded = [0u8; 32]; padded[padding..]     . copy_from_slice(bytes);
+  pub fn pad32l(bytes: &[u8])  -> [u8;32] {
+    let ost = min(32, bytes.len() as i32) as usize;
+    let pad = max(0, 32 as i32 - bytes.len() as i32) as usize;
+    let mut padded = [0u8;32]; padded[pad..] . copy_from_slice(&bytes[..ost]);
     padded
   }
 

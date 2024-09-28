@@ -1,3 +1,6 @@
+
+## Version logs 
+
 ##### v0.1.1 
 - Initial commit
 - - Porting over some of the python tools I wrote, as a single module
@@ -16,3 +19,10 @@
 - Added `data()` and `len()` wrappers to `Signature` and  `Word` types for convenience
 - Added more common `pop` to`View`, returns the hex `String` as opposed to `Word` type. 
 - Swapped some magic numbers for constants
+
+##### v0.1.3
+- Added edge case handlers to `pad32l` and `pad32r` 
+- - Functions needed to be more robust as the ones accepting arbitrary length 
+- Tests added to cover most of bai and kwl32
+- Modules are now public
+

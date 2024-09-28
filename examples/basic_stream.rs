@@ -25,7 +25,7 @@ fn build_basic_stream() {
   /* Sig: 
      Data:  01 
      View:  ["01"] 
-     Count: 1 () */
+     Count: 1    */
   // we can append following words
   [command2, amount, address] . map(|x| view.append(x));
 
@@ -68,9 +68,9 @@ fn build_basic_stream() {
   view.xor_fold_all();
 
   view.summary();
-  /* Signature: 
-     Data: 01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174 
-     View: ["01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174"] 
+  /* Sig: 
+     Data:  01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174 
+     View:  ["01ff08e8925e5c2e7de78eea2791bca1f2de4661ed88a30c99a7a9449aa84174"] 
      Count: 1  */
   
   // we have essentially concatonated our strings

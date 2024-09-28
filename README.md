@@ -7,6 +7,5 @@
 
 #### What can it be used for?
 Kawala should be useful to anyone interested in analysing or crafting calldata. <br>
-Ranging from support at a protocol looking for a quick summary, to an operator <br> 
-debugging custom streams for their bot. <br>
-See tests and examples for inspiration.
+Ranging from support at a protocol looking for a quick summary, to an operator debugging custom streams for their bot. <br>
+See examples for inspiration.

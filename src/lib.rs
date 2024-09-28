@@ -353,7 +353,7 @@ View cont..      destructive functions that mutate state
     let word = self.__word(index);
     self.replace_from_bytes(index, &pad32l(word.data.bytes()))
   }
-  // replace word with left padded equivalent
+  // replace word with right padded equivalent
   pub fn right_pad(&mut self, index : usize) -> (){
     let word = self.__word(index);
     self.replace_from_bytes(index, &pad32r(word.data.bytes()))
@@ -494,7 +494,7 @@ fn marshal_pre(fixed: &str) -> Vec<u8> {
 // just removes the need for an if to check hex, or multiplication of the bool.
 fn shift(b : bool) -> usize { ((b as u8) << (b as u8) << 0) as usize }
 
-/* mod imports */     mod bai; mod kwl32;
+/* mod imports */    pub mod bai; pub mod kwl32;
 use    bai::con::{ bytes_to_hex, hex_to_bytes };
 use kwl32::util::{       pad32l, pad32r       };
 use kwl32::util::{ xor32, and32, not32, or32  };

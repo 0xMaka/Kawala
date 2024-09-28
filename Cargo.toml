@@ -5,7 +5,7 @@
 # ------------------------------------------------------------------------------
 [package]                                                                     #|
 name         = "kawala"
-version      = "0.1.2"
+version      = "0.1.3"
 authors      = ["Maka <makagucci@gmx.com>"]
 edition      = "2021"
 license      = "MIT"
@@ -21,14 +21,5 @@ path         = "src/lib.rs"
 [dependencies]
 [features]
 simd = []
-
-#[[bin]]
-#name = "basic_stream" 
-#path = "examples/basic_stream.rs" 
-#
-#[[bin]]
-#name = "v2mod" 
-#path = "examples/v2mod.rs" 
-
                                                                              ##|
 # ------------------------------------------------------------------------------
