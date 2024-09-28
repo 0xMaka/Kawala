@@ -1,13 +1,13 @@
 <!--  
   @title  : README.md 
   @author : Maka 
-  @notice : follow the white rabbit go full kawala
+  @notice : follow the white rabbit go full kawala 😉🧀🃏
 <3 -->
 
 # Kawala - Just a Kwl Data Companion (High in Kawality)
 
    <img src="misc/assets/kawala-800.png" width=800 >
-              <!--  good vibes to you -->
+            <!--  p.s good vibes for you -->
               
 ---
 
@@ -31,8 +31,7 @@ See tests and examples for inspiration.
 | => [examples](examples/)     | Examples, focused on realistic scenarios.             |
 | => [tests](tests/)           | Kawala test suite.                                    |
 |      <img width=135/>        |                     <img width=430/>                  |
-| =>     👨‍💻 =>🐇=>🐨         |  4920646F6E2774206576656E207365652074686520636F64652E |
-
+| =>     👨‍💻 =>🐇=>🐨         |  4920646f6e2774206576656e207365652074686520636f64652e | <!-- I don't even see the code. -->
   </td>
 
   <td valign="top", valign="right">
@@ -61,11 +60,11 @@ See tests and examples for inspiration.
   <td valign="top", valign="center">
      
 ```rust
-/* install *///---------------//* import *///------------------------->
-/* Run in dir:              */ use kawala::{ View, Calldata, WithSig }; 
+/* install *///------------//* import *///------------------------->
+/* Run in dir:            */ use kawala::{ View, Calldata, WithSig }; 
 cargo add kawala           // 
 // or add to Cargo.toml:   //* init *///------------------------------------------------------->
-kawala = "0.1.2"             let mut view = View::new(Calldata::from_hex("ff"), WithSig::False);
+kawala = "0.1.3"             let mut view = View::new(Calldata::from_hex("ff"), WithSig::False);
 ``` 
 </td>
   </tr>
@@ -77,5 +76,7 @@ kawala = "0.1.2"             let mut view = View::new(Calldata::from_hex("ff"), 
   </tr>
 </table>
 
-... _416C6C20492073656520697320626C6F6E64652C206272756E657474652C20616E6420726564686561642E0A0A_ ![image](misc/assets/glider.png)
-                                                      <!--  say free <3 -->
+_..416c6c204920736565206973206172726179206f66667365742c2075696e7432353620616e6420616464726573732e_ ![image](misc/assets/glider.png)
+                    <!--  All I see is array offset, uint256 and address. -->
+                                                                                                           <!-- say free <3 -->
+
