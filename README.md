@@ -65,7 +65,7 @@ See tests and examples for inspiration.
 /* Run in dir:              */ use kawala::{ View, Calldata, WithSig }; 
 cargo add kawala           // 
 // or add to Cargo.toml:   //* init *///------------------------------------------------------->
-kawala = "0.1.2"             let mut view = View::new(Calldata::from_hex("ff"), WithSig::False);
+kawala = "0.1.3"             let mut view = View::new(Calldata::from_hex("ff"), WithSig::False);
 ``` 
 </td>
   </tr>
@@ -77,5 +77,5 @@ kawala = "0.1.2"             let mut view = View::new(Calldata::from_hex("ff"), 
   </tr>
 </table>
 
-... _416C6C20492073656520697320626C6F6E64652C206272756E657474652C20616E6420726564686561642E0A0A_ ![image](misc/assets/glider.png)
+_..416c6c204920736565206973206172726179206f66667365742c2075696e7432353620616e6420616464726573732e_ ![image](misc/assets/glider.png)
                                                       <!--  say free <3 -->
