@@ -60,7 +60,7 @@ See tests and examples for inspiration.
   <td valign="top", valign="center">
      
 ```rust
-/* install *///------------//* import *///-------------------------->
+/* install *///------------//* import *///------------------------->
 /* Run in dir:            */ use kawala::{ View, Calldata, WithSig }; 
 cargo add kawala           // 
 // or add to Cargo.toml:   //* init *///------------------------------------------------------->
@@ -79,4 +79,4 @@ kawala = "0.1.3"             let mut view = View::new(Calldata::from_hex("ff"), 
 _..416c6c204920736565206973206172726179206f66667365742c2075696e7432353620616e6420616464726573732e_ ![image](misc/assets/glider.png)
                     <!--  All I see is array offset, uint256 and address. -->
                                                                                                            <!-- say free <3 -->
-
+                                                                                                           
