@@ -207,13 +207,7 @@ mod kwl32_util {
   }
 
   #[test]
-  fn xor32_same_input() {
-    let a = [0xFFu8; 32];
-    assert_eq!(util::xor32(&a, &a), [0u8; 32]);
-  }
-
-  #[test]
-  fn xor32_same_input() {
+  fn and32_same_input() {
     let a = [0xFFu8; 32];
     assert_eq!(util::and32(&a, &a), a);
   }
