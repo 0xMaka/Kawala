@@ -60,7 +60,7 @@ See tests and examples for inspiration.
   <td valign="top", valign="center">
      
 ```rust
-/* install *///------------//* import *///------------------------->
+/* install *///------------//* import *///-------------------------->
 /* Run in dir:            */ use kawala::{ View, Calldata, WithSig }; 
 cargo add kawala           // 
 // or add to Cargo.toml:   //* init *///------------------------------------------------------->
