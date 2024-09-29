@@ -26,3 +26,6 @@
 - Tests added to cover most of bai and kwl32
 - Modules are now public
 
+##### v.1.4-pre
+- Added `chunk32` and `chunks32` to kwl32
+
