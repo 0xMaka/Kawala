@@ -1,12 +1,11 @@
 #[cfg(test)]
-mod tests {
+mod signature {
   use kawala::Signature;
 
   #[test]
   fn signature() -> () { 
     /* initialize a kawala::Signature */
     let sig = Signature::from_hex("0x791ac94700d00d1e");
-
     // will truncate
     assert_eq!(sig.hex() . chars() . count(), 8);
     assert_eq!(sig.bytes() . len(), 4);
@@ -15,7 +14,6 @@ mod tests {
   #[test]
   fn less_than_4() {
     let sig = Signature::from_hex("0x791ac9");
-
     // if it's less than 4 it can't be a signature
     // unwrap or default
     assert_eq!(sig.hex(), "00000000");

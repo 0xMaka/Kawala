@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod tests {
+mod view {
   
   use kawala::{ View, Calldata, WithSig };
    #[test]

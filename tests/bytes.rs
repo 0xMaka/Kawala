@@ -1,6 +1,61 @@
+//---------------------------------------- BYTES TYPE --------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 #[cfg(test)]
-mod tests {
+mod bytes {
   use kawala::Bytes;
+// ----------------------------------------------------------------------------------------------//
+
+// ----------------------------------- CREATION AND ACCESS --------------------------------------//
+
+#[test]
+fn bytes4_creation_and_access() {
+    let bytes = Bytes::Bytes4([0x01,0x02,0x03,0x04]);
+    assert_eq!(bytes.bytes(), [0x01,0x02,0x03,0x04]);
+    assert_eq!(bytes.len(), 4);
+    assert_eq!(bytes[0],    1);
+}
+
+#[test]
+fn bytes32_creation_and_access() {
+    let bytes = Bytes::Bytes32([0; 32]);
+    assert_eq!(bytes.bytes().len(), 32);
+    assert_eq!(bytes[0],             0);
+}
+
+#[test]
+fn array_creation_and_access() {
+    let bytes = Bytes::Array(vec![0x01,0x02,0x03]);
+    assert_eq!(bytes.bytes(), [1, 2, 3]);
+    assert_eq!(bytes.len(), 3);
+    assert_eq!(bytes[1], 2);
+}
+
+#[test]
+fn array_empty() {
+    let bytes = Bytes::Array(vec![]);
+    assert_eq!(bytes.bytes().len(), 0);
+}
+
+// ---------------------------------------- LEN & HEX -------------------------------------------//
+
+#[test]
+fn hex_conversion() {
+    let bytes = Bytes::Bytes32([0xFF; 32]);
+    assert_eq!(bytes.hex(), "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+}
+
+#[test]
+ fn len_wrapper() {
+    let bytes1 = Bytes::Bytes4([1, 2, 3, 4]);
+    let bytes2 = Bytes::Bytes32([0; 32]);
+    let bytes3 = Bytes::Array(vec![1, 2, 3, 4, 5]);
+
+    assert_eq!(bytes1.len(), 4);
+    assert_eq!(bytes2.len(), 32);
+    assert_eq!(bytes3.len(), 5);
+}
+
+// --------------------------------------- GENERAL USE ------------------------------------------//
 
   #[test]
   fn bytes32() -> () {
@@ -34,14 +89,5 @@ mod tests {
     assert_eq!(bytes.len(), 4);
     assert_eq!(bytes.hex() . chars() . count(), 8);
   }
-
-/* 
-  //won't accept over
-  #[test]
-  fn bytes_overflow() -> () {    
-    /* initialize a bytes4 with 8 bytes */
-    let bytes = Bytes::Bytes4([0u8;8]);
-  }
-*/
 }
 
