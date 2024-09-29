@@ -499,8 +499,11 @@ use    bai::con::{ bytes_to_hex, hex_to_bytes };
 use kwl32::util::{       pad32l, pad32r       };
 use kwl32::util::{ xor32, and32, not32, or32  };
 use kwl32::util::{      roll32l, roll32r      };
+#[allow(unused_imports)]
+use kwl32::util::{      chunk32, chunks32     };
+
 /*
-   End of core.
+End of core.
   //////////////////////////////////////////////////////////////////////// */
 /* ----------------------------------------------------------------------------
                                                      MIT License 2024 Maka  */
