@@ -45,6 +45,20 @@ use std::cmp::{ min, max };
   }
 
 //-----------------------------------------------------------------------------
+  
+  // takes an arbitrary lengthed slice, returns a 32 byte slice
+  pub fn chunk32(bytes: &[u8]) -> [u8;32] { 
+    if bytes.len() < 32 { pad32r(bytes) } 
+    else { let mut buf = [0u8;32]; buf . copy_from_slice(&bytes[..32]); buf }
+  }
+
+  // takes an arbitrary lengthed slice, returns an array of 32 byte slice(s)
+  pub fn chunks32(bytes: &[u8]) -> Vec<[u8;32]> {
+    (0..bytes.len()) . step_by(32) . map(|x| { chunk32(&bytes[x..]) })
+    . collect::<Vec<[u8;32]>>()
+  }
+
+//-----------------------------------------------------------------------------
 
  /* simd : map can be better for small arrays and we are working on 32 bytes
    so profile these! */

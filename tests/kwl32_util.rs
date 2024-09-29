@@ -138,7 +138,67 @@ mod kwl32_util {
 
     assert_eq!(util::roll32l(&input, 64), expected);
   }
-   
+
+//--------                        --------   CHUNK 32    --------                        --------//
+
+// less input
+#[test]
+fn chunk32_less_than_32_bytes() {
+    let input = [0u8; 16];
+    let expected = util::pad32r(&input);
+    assert_eq!(util::chunk32(&input), expected);
+}
+
+// exact input
+#[test]
+fn chunk32_exact_32_bytes() {
+    let input = [0u8; 32];
+    assert_eq!(util::chunk32(&input), input);
+}
+
+// more input
+#[test]
+fn chunk32_more_than_32_bytes() {
+  let input = [0u8; 64];
+  let expected = [0u8; 32];
+  assert_eq!(util::chunk32(&input), expected);
+}
+
+//--------                        --------   CHUNK 32    --------                        --------//
+
+// empty input
+#[test]
+fn chunks32_empty() { assert_eq!(util::chunks32(&[]), Vec::<[u8;32]>::new()) }
+
+// exact input
+#[test]
+fn chunks32_exact_32_bytes() {
+  let input = [0u8; 32];
+  assert_eq!(util::chunks32(&input), vec![input]);
+}
+
+// correct multi input
+#[test]
+fn chunks32_multiple_32_bytes() {
+  let input = [0u8; 96];
+  assert_eq!(util::chunks32(&input), vec![
+    [0u8;32],
+    [0u8;32],
+    [0u8;32]
+  ]);
+}
+
+// irregular multi (will trunk)
+#[test]
+fn chunks32_not_multiple_32_bytes() {
+  let input = [0u8; 65];
+  assert_eq!(util::chunks32(&input), vec![
+    [0u8;32],
+    [0u8;32],
+    [0u8;32]
+  ]);
+}
+
 //--------                        --------     XOR32     --------                        --------//
 
 
