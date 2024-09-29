@@ -38,10 +38,10 @@ See tests and examples for inspiration.
 
 |   [version history](misc/kawalas_log.md)  | 
 |-------------------------------------------|
+|  => [v0.1.4](misc/kawalas_log.md#v014)    |
 |  => [v0.1.3](misc/kawalas_log.md#v013)    |
 |  => [v0.1.2](misc/kawalas_log.md#v012)    |
-|  => [v0.1.1](misc/kawalas_log.md#v011)    | 
-|  =>             --------                  | 
+|  => [v0.1.1](misc/kawalas_log.md#v011)    |  
 |            <img width=100/>               |
 
   </td>

@@ -13,7 +13,7 @@
 pub mod util {
 use std::cmp::{ min, max };
 
-  // outout the result of right padding input with zeros
+  // output the result of right padding input with zeros
   pub fn pad32r(bytes: &[u8]) -> [u8;32] {
     let ost = min(32, bytes.len() as i32) as usize;
     let mut padded = [0u8;32]; padded[..ost] . copy_from_slice(&bytes[..ost]);
@@ -51,7 +51,6 @@ use std::cmp::{ min, max };
     if bytes.len() < 32 { pad32r(bytes) } 
     else { let mut buf = [0u8;32]; buf . copy_from_slice(&bytes[..32]); buf }
   }
-
   // takes an arbitrary lengthed slice, returns an array of 32 byte slice(s)
   pub fn chunks32(bytes: &[u8]) -> Vec<[u8;32]> {
     (0..bytes.len()) . step_by(32) . map(|x| { chunk32(&bytes[x..]) })
