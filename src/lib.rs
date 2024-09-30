@@ -77,6 +77,10 @@ impl Calldata {
     self.data.hex()
   }
 
+  pub fn len(&self)  -> usize {
+    self.data.len()
+  }
+
   pub fn from_bytes(bytes : &[u8]) -> Self {
     Self::new(Bytes::Array(bytes.to_vec()))
   }
@@ -87,6 +91,12 @@ impl Calldata {
 
   pub fn hex_0x(&self) -> String {
     "0x".to_owned() + &self.data.hex()
+  }
+}
+
+impl PartialEq for Calldata {
+  fn eq(&self, other: &Self) -> bool {
+    self.data == other.data
   }
 }
 
@@ -133,6 +143,12 @@ impl Signature {
       . try_into()
       . unwrap_or(EMPTY_SIG)
     }))
+  }
+}
+
+impl PartialEq for Signature {
+  fn eq(&self, other: &Self) -> bool {
+    self.data == other.data
   }
 }
 
@@ -365,6 +381,10 @@ View cont..      destructive functions that mutate state
   // pop the last item, return the result of its hex method
   pub fn pop(&mut self) -> String {
     self.__pop().hex()
+  }
+  // removes a word - wrapper for vec method, unwraps to hex
+  pub fn remove(&mut self, index : usize) -> String {
+    self.__remove(index).hex()
   }
   // replace word with left padded equivalent
   pub fn left_pad(&mut self, index : usize) -> () {

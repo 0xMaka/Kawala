@@ -2,12 +2,12 @@
 mod view {
   
   use kawala::{ View, Calldata, WithSig, Word };
-   #[test]
+  use kawala::bai;
+
+  #[test]
   fn view() -> (){
-    
     /* Create a blank View */
     let view = View::new(Calldata::from_bytes(&[0u8;32]), WithSig::False);
-    
     /* Run some sanity checks */
     assert_eq!(view.sig(),  "");
     assert_eq!(view.word_count(),  1);
@@ -106,17 +106,66 @@ mod view {
     assert_eq!(view.word(0),       word2);
   }
 
-
-   #[test]
-  fn __remove_word() -> (){
+  // remove word and get Word
+  #[test]
+  fn __remove_word_ideal_state() -> (){
     let mut view = View::new(Calldata::from_bytes(&[[0u8;32],[1u8;32]].concat()), WithSig::False);
     let expected = Word::from_bytes(&[1u8;32]);
-    assert_eq!(view.word_count(),  2);
-    let input = view.__remove(1);
-    assert_eq!(input, expected);
-    assert_eq!(view.word_count(),  1);
+    assert_eq!(view.word_count(), 2);   let input = view.__remove(1);
+    assert_eq!(input, expected);        assert_eq!(view.word_count(), 1);
+  }
+  
+  // remove word get String
+  #[test]
+  fn remove_word_ideal_state() -> (){
+    let mut view = View::new(Calldata::from_bytes(&[[0u8;32],[1u8;32]].concat()), WithSig::False);
+    let expected = Word::from_bytes(&[1u8;32]).hex();
+    assert_eq!(view.word_count(), 2);  let input = view.remove(1);
+    assert_eq!(input, expected);       assert_eq!(view.word_count(),  1);
+  }
+  
+  // pop Word get Word
+  #[test]
+  fn __pop_word_ideal_state() -> (){
+    let mut view = View::new(Calldata::from_bytes(&[[0u8;32],[1u8;32]].concat()), WithSig::False);
+    let expected = Word::from_bytes(&[1u8;32]);
+    assert_eq!(view.word_count(), 2);   let input = view.__pop();
+    assert_eq!(input, expected);        assert_eq!(view.word_count(), 1);
+  }
+  
+  // pop Word get get String
+  #[test]
+  fn pop_word_ideal_state() -> (){
+    let mut view = View::new(Calldata::from_bytes(&[[0u8;32],[1u8;32]].concat()), WithSig::False);
+    let expected = Word::from_bytes(&[1u8;32]).hex();
+    assert_eq!(view.word_count(), 2);  let input = view.pop();
+    assert_eq!(input, expected);       assert_eq!(view.word_count(),  1);
   }
 
+  // append from Word
+  #[test]
+  fn __append_word_ideal_state() -> (){
+    let mut view = View::new(Calldata::from_bytes(&[0u8;32]), WithSig::False);
+    let input    = Word::from_bytes(&[1u8;32]);
+    let expected = &Word::from_bytes(&[1u8;32]);
+    assert_eq!(view.word_count(), 1);   
+    view.__append(input);
+    assert_eq!(view.__word(1), expected);        
+    assert_eq!(view.word_count(), 2);
+  }
+  
+  // append from hex
+  #[test]
+  fn append_word_ideal_state() -> (){
+    let mut view = View::new(Calldata::from_bytes(&[0u8;32]), WithSig::False);
+    let input    = &bai::con::bytes_to_hex(&[1u8;32]);
+    let expected = bai::con::bytes_to_hex(&[1u8;32]);
+    assert_eq!(view.word_count(), 1);   
+    view.append(input);
+    assert_eq!(view.word(1), expected);        
+    assert_eq!(view.word_count(), 2);
+  }
 
 }
+
 

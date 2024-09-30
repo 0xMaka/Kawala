@@ -1,14 +1,16 @@
 ## Version logs 
 
-##### v0.1.4-pre
+##### v0.1.4
 - Added `chunk32` and `chunks32` to kwl32
 - Added `PartialEq` to `Bytes` and `Word`
 - Added `remove` and `__remove` to `View`
+- Added `len` wrapper and `partialEq` to `Calldata`
+- Added tests to cover base types
 
 ##### v0.1.3
 - Added edge case handlers to `pad32l` and `pad32r` 
 - - Functions needed to be more robust as the ones accepting arbitrary length 
-- Tests added to cover most of bai and kwl32
+- Added tests to cover most of bai and kwl32
 - Modules are now public
 
 ##### v0.1.2 
@@ -26,4 +28,3 @@
 - Initial commit
 - - Porting over some of the python tools I wrote, as a single module
 - - Data dump of initial working library { lib.rs, kwl32.rs, bai.rs }
-

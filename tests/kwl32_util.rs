@@ -195,17 +195,37 @@ mod kwl32_util {
     ]);
   }
 
-//--------                        --------     XOR32     --------                        --------//
+//--------                        -------     RESERVED    -------                        --------//
 
+// -- should not compile regardless of flag ------------------------------------------------------|
 
-//--------                        --------     AND32     --------                        --------//
+/*
+  #[test]
+  fn xor32_less_than_32_bytes() { let _ = util::xor32(&[0u8;16],&[0u8;32]); }
 
+  #[test]
+  fn xor32_more_than_32_bytes() { let _ = util::xor32(&[0u8;64],&[0u8;32]); }
 
-//--------                        --------     OR32      --------                        --------//
+  #[test]
+  fn and32_less_than_32_bytes() { let _ = util::and32(&[0u8;16],&[0u8;32]); }
 
+  #[test]
+  fn and32_more_than_32_bytes() { let _ = util::and32(&[0u8;64],&[0u8;32]); }
 
-//--------                        --------     NOT32     --------                        --------//
+  #[test]
+  fn or32_less_than_32_bytes() { let _ = util::or32(&[0u8;16],&[0u8;32]); }
 
+  #[test]
+  fn or32_more_than_32_bytes() { let _ = util::or32(&[0u8;64],&[0u8;32]); }
+
+  #[test]
+  fn not32_less_than_32_bytes() { let _ = util::not32(&[0u8;16]); }
+
+  #[test]
+  fn not32_more_than_32_bytes() { let _ = util::not32(&[0u8;64]); }
+*/
+
+// -- --------------------------------------- ----------------------------------------------------|
 
 //--------                        --------  General Ops  --------                        --------//
  
