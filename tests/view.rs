@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod view {
   
-  use kawala::{ View, Calldata, WithSig };
+  use kawala::{ View, Calldata, WithSig, Word };
    #[test]
   fn view() -> (){
     
@@ -105,5 +105,18 @@ mod view {
     view.replace(0,word2);
     assert_eq!(view.word(0),       word2);
   }
+
+
+   #[test]
+  fn __remove_word() -> (){
+    let mut view = View::new(Calldata::from_bytes(&[[0u8;32],[1u8;32]].concat()), WithSig::False);
+    let expected = Word::from_bytes(&[1u8;32]);
+    assert_eq!(view.word_count(),  2);
+    let input = view.__remove(1);
+    assert_eq!(input, expected);
+    assert_eq!(view.word_count(),  1);
+  }
+
+
 }
 
