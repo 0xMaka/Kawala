@@ -1,6 +1,6 @@
 ## Version logs 
 
-##### v.1.4
+##### v0.1.4
 - Added `chunk32` and `chunks32` to kwl32
 - Added `PartialEq` to `Bytes` and `Word`
 - Added `remove` and `__remove` to `View`
