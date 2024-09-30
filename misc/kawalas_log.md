@@ -10,7 +10,7 @@
 ##### v0.1.3
 - Added edge case handlers to `pad32l` and `pad32r` 
 - - Functions needed to be more robust as the ones accepting arbitrary length 
-- Added tests added to cover most of bai and kwl32
+- Added tests to cover most of bai and kwl32
 - Modules are now public
 
 ##### v0.1.2 
