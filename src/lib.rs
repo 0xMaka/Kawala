@@ -43,6 +43,17 @@ impl<I: std::slice::SliceIndex<[u8]>> std::ops::Index<I> for Bytes {
   }
 }
 
+impl PartialEq for Bytes {
+  fn eq(&self, other: &Self) -> bool {
+    match (self, other) {
+      ( Bytes::Bytes4(x) , Bytes::Bytes4(y) ) => x == y,
+      ( Bytes::Bytes32(x), Bytes::Bytes32(y)) => x == y,
+      ( Bytes::Array(x)  , Bytes::Array(y)  ) => x == y,
+      _                                       => false    
+    }
+  }
+}
+
 /* ----------------------------------------------------------------------------
  Calldata structure
 -----------------------------------------------------------------------------*/
@@ -195,6 +206,13 @@ impl Word {
 
   pub fn hex_0x(&self) -> String {
     "0x".to_owned() + &self.data.hex()
+  }
+
+}
+
+impl PartialEq for Word {
+  fn eq(&self, other: &Self) -> bool {
+    self.data == other.data
   }
 }
 
@@ -416,7 +434,15 @@ View cont..   exposed functions that take or return Kawala types
   pub fn __pop(&mut self) -> Word {
     self.page.pop() . unwrap_or(Word::from_bytes(&EMPTY_BYTES32))
   }
-  
+  // remove an element 
+  pub fn __remove(&mut self, index : usize) -> Word {
+    Some(self.page.remove(index)) . unwrap_or(Word::from_bytes(&EMPTY_BYTES32))
+  }
+
+/*
+  To do: Profile pseudo deque vs `VecDeque` refactor. Consider how infrequent.
+                                                                              */
+
 /* -----------------------*NOTE*: end of destructive ------------------------ */
 
   // returns a ref to all 32 byte Words
