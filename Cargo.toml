@@ -5,14 +5,14 @@
 # ------------------------------------------------------------------------------
 [package]                                                                     #|
 name         = "kawala"
-version      = "0.1.3"
+version      = "0.1.4"
 authors      = ["Maka <makagucci@gmx.com>"]
 edition      = "2021"
 license      = "MIT"
 
 repository   = "https://github.com/0xmaka/kawala"
 description  = "A tool to view, manipulate and craft calldata."
-keywords     = ["blockchain", "rust-lang", "evm", "blockchain-tool", "calldata"]
+keywords     = ["blockchain", "evm", "blockchain-tool", "calldata"]
 
 [lib]
 name         = "kawala"
