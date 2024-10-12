@@ -59,20 +59,8 @@ use std::cmp::{ min, max };
 
 //-----------------------------------------------------------------------------
 
- /* simd : map can be better for small arrays and we are working on 32 bytes
-   so profile these! */
-  #[cfg(feature = "simd")]
-  use std::simd::{ u8x16, SimdFloat };
   // h/o abstraction to remove repetition
   fn _fab(f: &dyn Fn(u8,u8) -> u8, a: &[u8;32], b: &[u8;32]) -> [u8;32] {
-    #[cfg(feature = "simd")]
-    {
-      let a_simd = u8x16::from_slice(a);
-      let b_simd = u8x16::from_slice(b);
-      let result_simd = f(a_simd, b_simd);
-      return result_simd.to_array;
-    }
-    // fallback
     let mut buf = [0u8;32]; (0..32) . for_each(|i|buf[i] = f(a[i], b[i]));
     buf
   }

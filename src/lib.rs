@@ -386,6 +386,12 @@ View cont..      destructive functions that mutate state
   pub fn remove(&mut self, index : usize) -> String {
     self.__remove(index).hex()
   }
+  // replace a word with a word, consume replacement
+  pub fn replace_with(&mut self, to : usize, from : usize) -> () {
+    let word = Some(self.page.remove(self._id(from))) 
+    . unwrap_or(Word::from_bytes(&EMPTY_BYTES32));
+    self._replace_word(self._id(to), &word.bytes())
+  }
   // replace word with left padded equivalent
   pub fn left_pad(&mut self, index : usize) -> () {
     let word = self.__word(index);
@@ -418,7 +424,7 @@ View cont..      destructive functions that mutate state
   }
   // *private* perform xor on the 2 tail elements, consume the tail
   fn _fold (&mut self) -> () {
-    let buf =  self.__pop(); self.xor_into(self.page.len() - ONE, buf.bytes())
+    let buf = self.__pop(); self.xor_into(self.page.len() - ONE, buf.bytes())
   }
   // public caller for above 
   pub fn xor_fold(&mut self) -> () {
@@ -432,15 +438,19 @@ View cont..      destructive functions that mutate state
   }
   // wrap the word at index around to the right by the given shift 
   pub fn right_shift(&mut self, index : usize, shift : usize) -> () {
-    let word = self.__word(index);
-    self.replace_from_bytes(index, self.__right_shift(word, shift).bytes())
+    let id = self._id(index); let word = self.__word(id);
+    self.replace_from_bytes(id, self.__right_shift(word, shift).bytes())
   }
-  // wrap around the word at index around to the left by the given shift 
+  // wrap the word at index around to the left by the given shift 
   pub fn left_shift(&mut self, index : usize, shift : usize) -> () {
-    let word = self.__word(index);
-    self.replace_from_bytes(index, self.__left_shift(word, shift).bytes())
+    let id = self._id(index); let word = self.__word(id);
+    self.replace_from_bytes(id, self.__left_shift(word, shift).bytes())
   }
-  
+  // returns an index within bounds
+  fn _id(&self, x: usize) -> usize {
+    let y = self.page.len() -ZERO_OFFSET; std::cmp::max(0, std::cmp::min(x, y))
+  }
+
 /* ----------------------------------------------------------------------------
 View cont..   exposed functions that take or return Kawala types
 -----------------------------------------------------------------------------*/
@@ -454,9 +464,10 @@ View cont..   exposed functions that take or return Kawala types
   pub fn __pop(&mut self) -> Word {
     self.page.pop() . unwrap_or(Word::from_bytes(&EMPTY_BYTES32))
   }
-  // remove an element 
+  // remove a word, remove last if out of bounds
   pub fn __remove(&mut self, index : usize) -> Word {
-    Some(self.page.remove(index)) . unwrap_or(Word::from_bytes(&EMPTY_BYTES32))
+    Some(self.page.remove(self._id(index))) 
+    . unwrap_or(Word::from_bytes(&EMPTY_BYTES32))
   }
 
 /*

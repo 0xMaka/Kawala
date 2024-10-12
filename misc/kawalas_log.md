@@ -1,5 +1,11 @@
 ## Version logs 
 
+##### v0.1.5
+- Added `replace_with` to `View`
+- Removed simd feature
+- - Abstracting the f applied to a,b had ruined the simd implementations.
+- - Juice seems not worth squeeze in current fix, so just removing for now.
+
 ##### v0.1.4
 - Added `chunk32` and `chunks32` to kwl32
 - Added `PartialEq` to `Bytes` and `Word`

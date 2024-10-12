@@ -12,7 +12,7 @@
 - [ ] Masks   => View methods for simplified masking
 - We can already build a mask, but can make the process feel more intuitive
 
-- [ ] Replace => View method to replace from word, consuming replacement
+- [x] Replace => View method to replace from word, consuming replacement
 - There is already replace, and long winded ways to do above, just add an abstraction
 
 - [ ] Deque   => View method to pop from the top of the page
