@@ -38,6 +38,7 @@ See tests and examples for inspiration.
 
 |   [version history](misc/kawalas_log.md)  | 
 |-------------------------------------------|
+|  => [v0.1.5](misc/kawalas_log.md#v015)    |
 |  => [v0.1.4](misc/kawalas_log.md#v014)    |
 |  => [v0.1.3](misc/kawalas_log.md#v013)    |
 |  => [v0.1.2](misc/kawalas_log.md#v012)    |
@@ -64,7 +65,7 @@ See tests and examples for inspiration.
 /* Run in dir:            */ use kawala::{ View, Calldata, WithSig }; 
 cargo add kawala           // 
 // or add to Cargo.toml:   //* init *///------------------------------------------------------->
-kawala = "0.1.4"             let mut view = View::new(Calldata::from_hex("ff"), WithSig::False);
+kawala = "0.1.5"             let mut view = View::new(Calldata::from_hex("ff"), WithSig::False);
 ``` 
 </td>
   </tr>
